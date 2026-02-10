@@ -9,18 +9,13 @@ import {
   info,
   warn,
 } from '../utils/display.js';
+import { detectAllAgents } from '../detectors/index.js';
 
 interface HealthResponse {
   status: string;
   version: string;
   uptime: number;
   agentCount: number;
-}
-
-interface AgentInfo {
-  name: string;
-  description: string;
-  detected: boolean;
 }
 
 async function tryMdnsDiscovery(): Promise<string | null> {
@@ -40,16 +35,6 @@ async function testHubConnection(hubUrl: string): Promise<HealthResponse | null>
   } catch {
     return null;
   }
-}
-
-// TODO: Task 30 — Replace with real agent detection (scan Claude Desktop, Cursor, VS Code, Windsurf configs)
-function detectInstalledAgents(): AgentInfo[] {
-  return [
-    { name: 'Claude Desktop', description: 'Anthropic Claude desktop app', detected: false },
-    { name: 'Cursor', description: 'AI-powered code editor', detected: false },
-    { name: 'VS Code + Continue', description: 'VS Code with Continue extension', detected: false },
-    { name: 'Windsurf', description: 'Codeium Windsurf editor', detected: false },
-  ];
 }
 
 // TODO: Task 31 — Replace with real MCP config file generation per agent type
@@ -125,13 +110,21 @@ export function makeSetupCommand(): Command {
       }
 
       const detectSpinner = ora('Detecting installed AI agents...').start();
-      const agents = detectInstalledAgents();
-      const detectedAgents = agents.filter((a) => a.detected);
+      const agents = await detectAllAgents();
+      const installedAgents = agents.filter((a) => a.installed);
 
-      if (detectedAgents.length > 0) {
-        detectSpinner.succeed(`Found ${detectedAgents.length} installed agent(s)`);
+      if (installedAgents.length > 0) {
+        detectSpinner.succeed(`Found ${installedAgents.length} installed agent(s)`);
       } else {
-        detectSpinner.info('No agents auto-detected (stub — real detection in Task 30)');
+        detectSpinner.info('No agents auto-detected');
+      }
+
+      console.log('');
+
+      for (const agent of agents) {
+        const status = agent.installed ? chalk.green('installed') : chalk.gray('not found');
+        const config = agent.configExists ? chalk.cyan(`config: ${agent.configPath}`) : chalk.gray('no config');
+        console.log(`  ${agent.name}: ${status} | ${config}`);
       }
 
       console.log('');
@@ -139,8 +132,8 @@ export function makeSetupCommand(): Command {
       let selectedAgents: string[];
 
       if (nonInteractive) {
-        selectedAgents = agents.map((a) => a.name);
-        info(`Auto-selecting all ${selectedAgents.length} agents`);
+        selectedAgents = installedAgents.map((a) => a.name);
+        info(`Auto-selecting ${selectedAgents.length} installed agent(s)`);
       } else {
         const answers = await inquirer.prompt([
           {
@@ -148,9 +141,9 @@ export function makeSetupCommand(): Command {
             name: 'agents',
             message: 'Select agents to configure:',
             choices: agents.map((a) => ({
-              name: `${a.name} — ${a.description}${a.detected ? chalk.green(' (detected)') : ''}`,
+              name: `${a.name}${a.installed ? chalk.green(' (installed)') : ''}${a.configExists ? chalk.cyan(' (config exists)') : ''}`,
               value: a.name,
-              checked: a.detected,
+              checked: a.installed,
             })),
           },
         ]);
