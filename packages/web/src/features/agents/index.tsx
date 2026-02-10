@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bot } from "lucide-react";
+import { motion } from "motion/react";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -234,16 +235,25 @@ export function AgentsList() {
           deletingId={deletingId}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
+        >
           {filteredAgents.map((agent) => (
-            <AgentCard
+            <motion.div
               key={agent.id}
-              agent={agent}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              isDeleting={deletingId === agent.id}
-            />
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.25 } } }}
+            >
+              <AgentCard
+                agent={agent}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                isDeleting={deletingId === agent.id}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

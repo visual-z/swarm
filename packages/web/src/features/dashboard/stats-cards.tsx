@@ -1,6 +1,8 @@
 import { Bot, MessageSquare, Users, FolderKanban, TrendingUp, TrendingDown } from "lucide-react";
+import { motion } from "motion/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCountUp } from "@/hooks/use-count-up";
 
 interface StatsCardsProps {
   agentCount: number;
@@ -78,6 +80,25 @@ function getSubtext(
   }
 }
 
+function AnimatedCount({ value }: { value: number }) {
+  const displayed = useCountUp(value);
+  return <>{displayed}</>;
+}
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+};
+
 export function StatsCards(props: StatsCardsProps) {
   if (props.isLoading) {
     return (
@@ -99,40 +120,46 @@ export function StatsCards(props: StatsCardsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <motion.div
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {stats.map((stat) => {
         const count = getCount(stat.key, props);
         const subtext = getSubtext(stat.key, props);
         const TrendIcon = stat.trendUp ? TrendingUp : TrendingDown;
 
         return (
-          <Card
-            key={stat.key}
-            className="group relative overflow-hidden transition-shadow hover:shadow-md"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-500/[0.03] dark:to-brand-400/[0.05]" />
-            <CardContent className="relative flex items-center gap-4">
-              <div
-                className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} transition-transform group-hover:scale-105`}
-              >
-                <stat.icon className={`size-5 ${stat.color}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  {stat.label}
-                </p>
-                <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-                  {count}
-                </p>
-                <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                  <TrendIcon className="size-3" />
-                  <span>{subtext}</span>
+          <motion.div key={stat.key} variants={itemVariants}>
+            <Card
+              className="group relative overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-500/[0.03] dark:to-brand-400/[0.05]" />
+              <CardContent className="relative flex items-center gap-4">
+                <div
+                  className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${stat.bgColor} transition-transform group-hover:scale-105`}
+                >
+                  <stat.icon className={`size-5 ${stat.color}`} />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                    {stat.label}
+                  </p>
+                  <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground tabular-nums">
+                    <AnimatedCount value={count} />
+                  </p>
+                  <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                    <TrendIcon className="size-3" />
+                    <span>{subtext}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         );
       })}
-    </div>
+    </motion.div>
   );
 }

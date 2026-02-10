@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Users } from "lucide-react";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { API_BASE_URL } from "@/lib/api";
@@ -59,15 +60,24 @@ export function TeamsList() {
       {teams.length === 0 ? (
         <EmptyState onCreateClick={() => setCreateOpen(true)} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
+        >
           {teams.map((team) => (
-            <TeamCard
+            <motion.div
               key={team.id}
-              team={team}
-              onClick={() => setSelectedTeamId(team.id)}
-            />
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.25 } } }}
+            >
+              <TeamCard
+                team={team}
+                onClick={() => setSelectedTeamId(team.id)}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       <CreateTeamDialog open={createOpen} onOpenChange={setCreateOpen} />

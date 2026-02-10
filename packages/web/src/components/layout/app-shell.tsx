@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useRouterState } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "motion/react";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
@@ -9,6 +10,8 @@ import { useWebSocket } from "@/hooks/use-websocket";
 
 export function AppShell() {
   const [commandOpen, setCommandOpen] = useState(false);
+  const routerState = useRouterState();
+  const routeKey = routerState.location.pathname;
 
   useWebSocket();
 
@@ -17,9 +20,18 @@ export function AppShell() {
       <AppSidebar />
       <SidebarInset>
         <Header onOpenCommandPalette={() => setCommandOpen(true)} />
-        <div className="flex flex-1 flex-col">
-          <Outlet />
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={routeKey}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-1 flex-col"
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </SidebarInset>
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </SidebarProvider>

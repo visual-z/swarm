@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowDown, MessageSquareDashed, ArrowLeft, Inbox } from "lucide-react";
+import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -233,7 +234,12 @@ export function ChatView({
                 : resolvedAgent?.displayName ?? agent?.displayName ?? msg.from.slice(0, 8);
 
               return (
-                <div key={msg.id}>
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
                   {showDateSep && (
                     <div className="flex items-center gap-3 py-3">
                       <div className="h-px flex-1 bg-border" />
@@ -248,7 +254,7 @@ export function ChatView({
                     isSent={isSent}
                     senderName={senderName}
                   />
-                </div>
+                </motion.div>
               );
             })}
             <div ref={bottomRef} />

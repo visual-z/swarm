@@ -59,7 +59,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
 
   return (
     <Card
-      className="group relative cursor-pointer gap-0 overflow-hidden py-0 transition-all hover:shadow-md hover:-translate-y-0.5"
+      className="group relative cursor-pointer gap-0 overflow-hidden py-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
       onClick={onClick}
     >
       <div

@@ -18,7 +18,7 @@ export function AgentCard({ agent, onDelete, isDeleting }: AgentCardProps) {
   const status = statusConfig[agent.status] ?? statusConfig.offline;
 
   return (
-    <Card className="group relative gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md">
+    <Card className="group relative gap-0 overflow-hidden py-0 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
       <div
         className="h-1.5 w-full"
         style={{
@@ -45,10 +45,17 @@ export function AgentCard({ agent, onDelete, isDeleting }: AgentCardProps) {
                 <h3 className="truncate font-semibold leading-tight text-foreground">
                   {agent.displayName}
                 </h3>
-                <span
-                  className={`inline-block size-2 shrink-0 rounded-full ${status.dot}`}
-                  title={status.label}
-                />
+                <span className="relative flex size-2 shrink-0">
+                  {agent.status === "online" && (
+                    <span
+                      className={`absolute inset-0 rounded-full ${status.dot} animate-pulse-dot`}
+                    />
+                  )}
+                  <span
+                    className={`relative inline-flex size-2 rounded-full ${status.dot}`}
+                    title={status.label}
+                  />
+                </span>
               </div>
               <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
                 {agent.name}

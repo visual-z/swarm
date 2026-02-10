@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FolderKanban, Plus } from "lucide-react";
+import { motion } from "motion/react";
 import { API_BASE_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,15 +70,24 @@ export function ProjectsPage() {
       {projects.length === 0 ? (
         <EmptyState onCreateClick={() => setCreateOpen(true)} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+          initial="hidden"
+          animate="visible"
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
+        >
           {projects.map((project) => (
-            <ProjectCard
+            <motion.div
               key={project.id}
-              project={project}
-              onClick={() => setSelectedId(project.id)}
-            />
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.25 } } }}
+            >
+              <ProjectCard
+                project={project}
+                onClick={() => setSelectedId(project.id)}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       <CreateProjectDialog

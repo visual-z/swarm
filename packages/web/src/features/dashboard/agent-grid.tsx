@@ -30,7 +30,7 @@ function AgentChip({ agent }: { agent: Agent }) {
     >
       <span className="relative flex size-2.5 shrink-0">
         <span
-          className={`absolute inset-0 rounded-full ${cfg.dot} ${cfg.pulse ? "animate-ping opacity-60" : ""}`}
+          className={`absolute inset-0 rounded-full ${cfg.dot} ${cfg.pulse ? "animate-pulse-dot" : ""}`}
         />
         <span className={`relative inline-flex size-2.5 rounded-full ${cfg.dot}`} />
       </span>
