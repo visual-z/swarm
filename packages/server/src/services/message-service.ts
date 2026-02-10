@@ -2,6 +2,7 @@ import { eq, and, or, desc, asc, gt, type SQL } from 'drizzle-orm';
 import { db, messages, agents } from '../db/index.js';
 import type { SendMessageRequest } from '@swarmroom/shared';
 import { MAX_MESSAGE_SIZE_BYTES } from '@swarmroom/shared';
+import { pushMessageToRecipient } from './ws-manager.js';
 
 export function createMessage(input: SendMessageRequest) {
   const contentBytes = new TextEncoder().encode(input.content).length;
@@ -55,6 +56,10 @@ export function createMessage(input: SendMessageRequest) {
       createdMessages.push(getMessageById(id)!);
     }
 
+    for (const msg of createdMessages) {
+      pushMessageToRecipient(msg.to, msg);
+    }
+
     return createdMessages;
   }
 
@@ -74,7 +79,10 @@ export function createMessage(input: SendMessageRequest) {
     })
     .run();
 
-  return getMessageById(id)!;
+  const created = getMessageById(id)!;
+  pushMessageToRecipient(created.to, created);
+
+  return created;
 }
 
 export function getMessagesForAgent(

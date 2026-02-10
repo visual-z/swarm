@@ -1,6 +1,7 @@
 import { eq, lt, and, ne } from 'drizzle-orm';
 import { db, agents } from '../db/index.js';
 import { HEARTBEAT_INTERVAL_MS, STALE_TIMEOUT_MS } from '@swarmroom/shared';
+import { broadcastAgentOffline } from './ws-manager.js';
 
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -27,6 +28,8 @@ function markStaleAgentsOffline(): void {
       .set({ status: 'offline', updatedAt: Date.now() })
       .where(eq(agents.id, agent.id))
       .run();
+
+    broadcastAgentOffline({ id: agent.id, name: agent.name });
   }
 }
 

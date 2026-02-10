@@ -14,6 +14,7 @@ import {
   updateAgent,
   deregisterAgent,
 } from '../services/agent-service.js';
+import { broadcastAgentOnline, broadcastAgentOffline } from '../services/ws-manager.js';
 
 const agentsRoute = new Hono();
 
@@ -29,6 +30,9 @@ agentsRoute.post('/', async (c) => {
 
   try {
     const agent = createAgent(parsed.data);
+    if (agent) {
+      broadcastAgentOnline({ id: agent.id, name: agent.name });
+    }
     return c.json({ success: true, data: agent }, 201);
   } catch (err: unknown) {
     if (err instanceof Error && err.message.includes('UNIQUE constraint failed')) {
@@ -88,6 +92,8 @@ agentsRoute.delete('/:id', (c) => {
   if (!agent) {
     throw new HTTPException(404, { message: `Agent "${id}" not found` });
   }
+
+  broadcastAgentOffline({ id: agent.id, name: agent.name });
 
   return c.json({ success: true, data: agent });
 });
