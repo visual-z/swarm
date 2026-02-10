@@ -10,6 +10,8 @@ import {
   warn,
 } from '../utils/display.js';
 import { detectAllAgents } from '../detectors/index.js';
+import { configureAgent } from '../configurators/index.js';
+import type { DetectionResult } from '../detectors/index.js';
 
 interface HealthResponse {
   status: string;
@@ -35,22 +37,6 @@ async function testHubConnection(hubUrl: string): Promise<HealthResponse | null>
   } catch {
     return null;
   }
-}
-
-// TODO: Task 31 — Replace with real MCP config file generation per agent type
-function generateMcpConfig(agentName: string, hubUrl: string): Record<string, unknown> {
-  return {
-    mcpServers: {
-      swarmroom: {
-        command: 'npx',
-        args: ['-y', '@swarmroom/cli', 'mcp-serve'],
-        env: {
-          SWARMROOM_HUB_URL: hubUrl,
-          SWARMROOM_AGENT_NAME: agentName,
-        },
-      },
-    },
-  };
 }
 
 export function makeSetupCommand(): Command {
@@ -157,31 +143,48 @@ export function makeSetupCommand(): Command {
 
       console.log('');
 
-      const configs: Array<{ agent: string; config: Record<string, unknown> }> = [];
+      const agentMap = new Map<string, DetectionResult>();
+      for (const agent of agents) {
+        agentMap.set(agent.name, agent);
+      }
+
+      const configuredAgents: string[] = [];
+      const failedAgents: string[] = [];
 
       for (const agentName of selectedAgents) {
-        const config = generateMcpConfig(agentName, hubUrl);
-        configs.push({ agent: agentName, config });
+        const detection = agentMap.get(agentName);
+        if (!detection) continue;
+
+        const configSpinner = ora(`Configuring ${chalk.bold(agentName)}...`).start();
+        const result = await configureAgent(agentName, hubUrl, detection.configPath, dryRun);
+
+        if (!result.success) {
+          configSpinner.fail(`${agentName}: ${chalk.red(result.error ?? 'unknown error')}`);
+          failedAgents.push(agentName);
+          continue;
+        }
+
+        if (dryRun) {
+          configSpinner.info(`${agentName}: ${chalk.yellow('dry run')} → ${chalk.dim(result.configPath)}`);
+        } else {
+          const backupNote = result.backedUp ? ` (backup: ${chalk.dim(result.backupPath)})` : '';
+          configSpinner.succeed(`${agentName}: ${chalk.green('configured')} → ${chalk.dim(result.configPath)}${backupNote}`);
+        }
+
+        if (result.after) {
+          console.log(chalk.gray(result.after.split('\n').map((l) => `    ${l}`).join('\n')));
+        }
+
+        configuredAgents.push(agentName);
       }
 
-      if (dryRun) {
-        info('Would generate MCP configurations for:');
-        console.log('');
-        for (const { agent, config } of configs) {
-          console.log(chalk.bold(`  ${agent}:`));
-          console.log(chalk.gray(JSON.stringify(config, null, 2).split('\n').map((l) => `    ${l}`).join('\n')));
-          console.log('');
-        }
-      } else {
-        // TODO: Task 31 — Write actual config files to disk
-        info('Config writing is stubbed — real implementation in Task 31');
-        console.log('');
-      }
+      console.log('');
 
       const summaryLines = [
         `Hub: ${hubUrl}`,
-        `Agents configured: ${selectedAgents.length}`,
-        ...selectedAgents.map((a) => `  ${chalk.green('✔')} ${a}`),
+        `Agents configured: ${configuredAgents.length}`,
+        ...configuredAgents.map((a) => `  ${chalk.green('✔')} ${a}`),
+        ...failedAgents.map((a) => `  ${chalk.red('✘')} ${a}`),
       ];
 
       if (dryRun) {
@@ -190,7 +193,7 @@ export function makeSetupCommand(): Command {
 
       successBox('Setup Complete', summaryLines);
 
-      if (!dryRun) {
+      if (!dryRun && configuredAgents.length > 0) {
         info('Run ' + chalk.cyan('swarmroom status') + ' to verify your configuration.');
       }
     });
