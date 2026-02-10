@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TeamsIndexRouteImport } from './routes/teams/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as MessagesIndexRouteImport } from './routes/messages/index'
+import { Route as AgentsIndexRouteImport } from './routes/agents/index'
+import { Route as AgentsAgentIdRouteImport } from './routes/agents/$agentId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamsIndexRoute = TeamsIndexRouteImport.update({
+  id: '/teams/',
+  path: '/teams/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
+  id: '/projects/',
+  path: '/projects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsIndexRoute = AgentsIndexRouteImport.update({
+  id: '/agents/',
+  path: '/agents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsAgentIdRoute = AgentsAgentIdRouteImport.update({
+  id: '/agents/$agentId',
+  path: '/agents/$agentId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents/': typeof AgentsIndexRoute
+  '/messages/': typeof MessagesIndexRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/teams/': typeof TeamsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents': typeof AgentsIndexRoute
+  '/messages': typeof MessagesIndexRoute
+  '/projects': typeof ProjectsIndexRoute
+  '/settings': typeof SettingsIndexRoute
+  '/teams': typeof TeamsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents/$agentId': typeof AgentsAgentIdRoute
+  '/agents/': typeof AgentsIndexRoute
+  '/messages/': typeof MessagesIndexRoute
+  '/projects/': typeof ProjectsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/teams/': typeof TeamsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/agents/$agentId'
+    | '/agents/'
+    | '/messages/'
+    | '/projects/'
+    | '/settings/'
+    | '/teams/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/agents/$agentId'
+    | '/agents'
+    | '/messages'
+    | '/projects'
+    | '/settings'
+    | '/teams'
+  id:
+    | '__root__'
+    | '/'
+    | '/agents/$agentId'
+    | '/agents/'
+    | '/messages/'
+    | '/projects/'
+    | '/settings/'
+    | '/teams/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsAgentIdRoute: typeof AgentsAgentIdRoute
+  AgentsIndexRoute: typeof AgentsIndexRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
+  ProjectsIndexRoute: typeof ProjectsIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+  TeamsIndexRoute: typeof TeamsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teams/': {
+      id: '/teams/'
+      path: '/teams'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof TeamsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects/': {
+      id: '/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof ProjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/': {
+      id: '/agents/'
+      path: '/agents'
+      fullPath: '/agents/'
+      preLoaderRoute: typeof AgentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/$agentId': {
+      id: '/agents/$agentId'
+      path: '/agents/$agentId'
+      fullPath: '/agents/$agentId'
+      preLoaderRoute: typeof AgentsAgentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsAgentIdRoute: AgentsAgentIdRoute,
+  AgentsIndexRoute: AgentsIndexRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
+  ProjectsIndexRoute: ProjectsIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+  TeamsIndexRoute: TeamsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
