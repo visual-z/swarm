@@ -7,6 +7,7 @@ import { messagesRoute } from './routes/messages.js';
 import { teamsRoute } from './routes/teams.js';
 import { projectsRoute } from './routes/projects.js';
 import { wellKnown } from './routes/well-known.js';
+import { mcpRoute } from './mcp/transport.js';
 
 const app = new Hono();
 
@@ -18,6 +19,7 @@ app.route('/api/agents', agentsRoute);
 app.route('/api/messages', messagesRoute);
 app.route('/api/teams', teamsRoute);
 app.route('/api/projects', projectsRoute);
+app.route('/mcp', mcpRoute);
 
 app.get('/', (c) => {
   return c.json({
