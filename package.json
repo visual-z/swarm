@@ -2,6 +2,9 @@
   "name": "swarmroom",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test:e2e": "vitest run --config tests/vitest.config.ts"
+  },
   "workspaces": [
     "packages/*"
   ],
