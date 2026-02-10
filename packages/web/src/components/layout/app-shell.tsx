@@ -5,9 +5,12 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { CommandPalette } from "@/components/command-palette";
+import { useWebSocket } from "@/hooks/use-websocket";
 
 export function AppShell() {
   const [commandOpen, setCommandOpen] = useState(false);
+
+  useWebSocket();
 
   return (
     <SidebarProvider>

@@ -4,6 +4,7 @@ import { SearchIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { useWsStore, type ConnectionStatus } from "@/stores/ws-store";
 
 const routeLabels: Record<string, string> = {
   "/": "Dashboard",
@@ -27,6 +28,43 @@ function getBreadcrumb(pathname: string): string[] {
   }
 
   return crumbs;
+}
+
+const statusConfig: Record<
+  ConnectionStatus,
+  { color: string; pulse: string; label: string }
+> = {
+  connected: {
+    color: "bg-emerald-500",
+    pulse: "",
+    label: "Connected",
+  },
+  connecting: {
+    color: "bg-amber-500",
+    pulse: "animate-pulse",
+    label: "Reconnecting…",
+  },
+  disconnected: {
+    color: "bg-red-500",
+    pulse: "",
+    label: "Disconnected",
+  },
+};
+
+function ConnectionIndicator() {
+  const status = useWsStore((s) => s.connectionStatus);
+  const config = statusConfig[status];
+
+  return (
+    <div className="flex items-center gap-1.5" title={config.label}>
+      <span
+        className={`size-2 rounded-full ${config.color} ${config.pulse}`}
+      />
+      <span className="hidden text-xs text-muted-foreground sm:inline">
+        {config.label}
+      </span>
+    </div>
+  );
 }
 
 interface HeaderProps {
@@ -64,7 +102,9 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
         </nav>
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-3">
+        <ConnectionIndicator />
+        <Separator orientation="vertical" className="h-4!" />
         <Button
           variant="outline"
           size="sm"
