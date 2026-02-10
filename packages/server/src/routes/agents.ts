@@ -1,6 +1,12 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
-import { RegisterAgentRequestSchema } from '@swarmroom/shared';
+import { eq } from 'drizzle-orm';
+import {
+  RegisterAgentRequestSchema,
+  HeartbeatRequestSchema,
+  HEARTBEAT_INTERVAL_MS,
+} from '@swarmroom/shared';
+import { db, agents } from '../db/index.js';
 import {
   createAgent,
   listAgents,
@@ -84,6 +90,37 @@ agentsRoute.delete('/:id', (c) => {
   }
 
   return c.json({ success: true, data: agent });
+});
+
+agentsRoute.post('/:id/heartbeat', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const parsed = HeartbeatRequestSchema.safeParse(body);
+
+  if (!parsed.success) {
+    throw new HTTPException(400, {
+      message: `Invalid request body: ${parsed.error.issues.map((i) => i.message).join(', ')}`,
+    });
+  }
+
+  const existing = db.select({ id: agents.id }).from(agents).where(eq(agents.id, id)).get();
+  if (!existing) {
+    throw new HTTPException(404, { message: `Agent "${id}" not found` });
+  }
+
+  const now = Date.now();
+  const updates: Record<string, unknown> = {
+    lastHeartbeat: now,
+    updatedAt: now,
+  };
+
+  if (parsed.data.status) {
+    updates.status = parsed.data.status;
+  }
+
+  db.update(agents).set(updates).where(eq(agents.id, id)).run();
+
+  return c.json({ status: 'ok', interval: HEARTBEAT_INTERVAL_MS });
 });
 
 export { agentsRoute };
