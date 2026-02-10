@@ -59,7 +59,7 @@ export function AgentDetail({ agentId }: AgentDetailProps) {
 
   if (agentQuery.isError || !agentQuery.data) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-4 sm:p-8">
         <div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
           <Bot className="size-8 text-muted-foreground" />
         </div>
@@ -76,7 +76,7 @@ export function AgentDetail({ agentId }: AgentDetailProps) {
   const agent = agentQuery.data;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <AgentHeader
         agent={agent}
         onDelete={() => deleteMutation.mutate()}
@@ -108,7 +108,7 @@ export function AgentDetail({ agentId }: AgentDetailProps) {
 
 function DetailSkeleton() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="overflow-hidden rounded-xl border border-border/60">
         <Skeleton className="h-24 w-full rounded-none" />
         <div className="px-6 pb-6">

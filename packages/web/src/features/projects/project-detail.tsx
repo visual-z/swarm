@@ -104,7 +104,7 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <button
         onClick={onBack}
         className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground w-fit"
@@ -113,7 +113,7 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
         Back to projects
       </button>
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
           {project.description && (

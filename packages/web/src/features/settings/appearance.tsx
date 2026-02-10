@@ -67,7 +67,7 @@ export function Appearance() {
                   className={`flex size-12 items-center justify-center rounded-xl transition-colors ${
                     active
                       ? "bg-brand-500/15 text-brand-500"
-                      : "bg-background text-muted-foreground shadow-sm group-hover:text-foreground"
+                      : "bg-background text-muted-foreground shadow-sm dark:border dark:border-border group-hover:text-foreground"
                   }`}
                 >
                   <t.icon className="size-5" />

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AgentDetail } from "@/features/agents/detail";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export const Route = createFileRoute("/agents/$agentId")({
   component: AgentDetailPage,
@@ -8,5 +9,9 @@ export const Route = createFileRoute("/agents/$agentId")({
 function AgentDetailPage() {
   const { agentId } = Route.useParams();
 
-  return <AgentDetail agentId={agentId} />;
+  return (
+    <ErrorBoundary featureName="Agent Detail">
+      <AgentDetail agentId={agentId} />
+    </ErrorBoundary>
+  );
 }

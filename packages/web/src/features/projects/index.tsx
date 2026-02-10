@@ -52,7 +52,7 @@ export function ProjectsPage() {
   const projects = projectsQuery.data ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
@@ -109,7 +109,7 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <div>
           <Skeleton className="h-8 w-36" />

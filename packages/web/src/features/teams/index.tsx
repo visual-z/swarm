@@ -42,7 +42,7 @@ export function TeamsList() {
   const teams = teamsQuery.data ?? [];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Teams</h1>
@@ -106,7 +106,7 @@ function EmptyState({ onCreateClick }: { onCreateClick: () => void }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <div>
           <Skeleton className="h-8 w-28" />

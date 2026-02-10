@@ -198,7 +198,7 @@ export function AgentsList() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Agents</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -287,7 +287,7 @@ function NoResults({ onClear }: { onClear: () => void }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div>
         <Skeleton className="h-8 w-32" />
         <Skeleton className="mt-2 h-4 w-64" />

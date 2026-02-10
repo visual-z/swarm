@@ -27,7 +27,8 @@ interface AgentTableProps {
 
 export function AgentTable({ agents, onDelete, deletingId }: AgentTableProps) {
   return (
-    <Table>
+    <div className="overflow-x-auto rounded-lg border">
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-10" />
@@ -122,5 +123,6 @@ export function AgentTable({ agents, onDelete, deletingId }: AgentTableProps) {
         })}
       </TableBody>
     </Table>
+    </div>
   );
 }

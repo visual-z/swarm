@@ -71,7 +71,7 @@ export function Dashboard() {
   const onlineCount = agents.filter((a) => a.status === "online").length;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-brand-500/10">

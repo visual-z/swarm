@@ -5,7 +5,7 @@ import { About } from "./about";
 
 export function SettingsPage() {
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-8 p-6 pb-16 lg:p-8">
+    <div className="mx-auto w-full max-w-4xl space-y-8 p-4 pb-16 sm:p-6 lg:p-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="mt-1 text-sm text-muted-foreground">
