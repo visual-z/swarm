@@ -4,6 +4,8 @@ import { errorHandler } from './middleware/error-handler.js';
 import { health } from './routes/health.js';
 import { agentsRoute } from './routes/agents.js';
 import { messagesRoute } from './routes/messages.js';
+import { teamsRoute } from './routes/teams.js';
+import { projectsRoute } from './routes/projects.js';
 import { wellKnown } from './routes/well-known.js';
 
 const app = new Hono();
@@ -14,6 +16,8 @@ app.route('/', health);
 app.route('/', wellKnown);
 app.route('/api/agents', agentsRoute);
 app.route('/api/messages', messagesRoute);
+app.route('/api/teams', teamsRoute);
+app.route('/api/projects', projectsRoute);
 
 app.get('/', (c) => {
   return c.json({
