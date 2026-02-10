@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowDown, MessageSquareDashed, ArrowLeft } from "lucide-react";
+import { ArrowDown, MessageSquareDashed, ArrowLeft, Inbox } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-import { MessageBubble, type Message, type MessageType } from "./message-bubble";
+import { MessageBubble, type Message, type MessageType, type SenderType } from "./message-bubble";
 import { MessageInput } from "./message-input";
 import type { Agent } from "./conversation-list";
 
@@ -47,22 +47,30 @@ const statusColors: Record<Agent["status"], string> = {
 
 interface ChatViewProps {
   agent: Agent | null;
+  agents?: Agent[];
   messages: Message[];
   dashboardId: string;
   onSend: (content: string, type: MessageType) => void;
   isBroadcast?: boolean;
+  isInbox?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
+  senderType: SenderType;
+  onSenderTypeChange: (type: SenderType) => void;
 }
 
 export function ChatView({
   agent,
+  agents,
   messages,
   dashboardId,
   onSend,
   isBroadcast,
+  isInbox,
   onBack,
   showBackButton,
+  senderType,
+  onSenderTypeChange,
 }: ChatViewProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -111,7 +119,7 @@ export function ChatView({
     return () => viewport.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  if (!agent && !isBroadcast) {
+  if (!agent && !isBroadcast && !isInbox) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
         <div className="relative">
@@ -131,12 +139,16 @@ export function ChatView({
     );
   }
 
-  const headerTitle = isBroadcast
-    ? "Broadcast"
-    : agent?.displayName ?? "Unknown";
-  const headerSubtitle = isBroadcast
-    ? "Message all online agents"
-    : agent?.status ?? "";
+  const headerTitle = isInbox
+    ? "Dashboard Inbox"
+    : isBroadcast
+      ? "Broadcast"
+      : agent?.displayName ?? "Unknown";
+  const headerSubtitle = isInbox
+    ? "Messages from agents to you"
+    : isBroadcast
+      ? "Message all online agents"
+      : agent?.status ?? "";
 
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
@@ -158,7 +170,11 @@ export function ChatView({
           </Button>
         )}
 
-        {isBroadcast ? (
+        {isInbox ? (
+          <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white">
+            <Inbox className="size-4" />
+          </div>
+        ) : isBroadcast ? (
           <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-white">
             <MessageSquareDashed className="size-4" />
           </div>
@@ -211,9 +227,10 @@ export function ChatView({
               lastDate = msgDate;
 
               const isSent = msg.from === dashboardId;
+              const resolvedAgent = agents?.find((a) => a.id === msg.from);
               const senderName = isSent
                 ? "You"
-                : agent?.displayName ?? msg.from.slice(0, 8);
+                : resolvedAgent?.displayName ?? agent?.displayName ?? msg.from.slice(0, 8);
 
               return (
                 <div key={msg.id}>
@@ -251,11 +268,15 @@ export function ChatView({
         )}
       </div>
 
-      <MessageInput
-        onSend={onSend}
-        selectedType={selectedType}
-        onTypeChange={setSelectedType}
-      />
+      {!isInbox && (
+        <MessageInput
+          onSend={onSend}
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+          senderType={senderType}
+          onSenderTypeChange={onSenderTypeChange}
+        />
+      )}
     </div>
   );
 }

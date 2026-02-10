@@ -11,7 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ConversationList, type Agent } from "./conversation-list";
 import { ChatView } from "./chat-view";
 import { NewConversationDialog } from "./new-conversation-dialog";
-import type { Message, MessageType } from "./message-bubble";
+import type { Message, MessageType, SenderType } from "./message-bubble";
 
 const DASHBOARD_ID = "dashboard";
 
@@ -53,7 +53,7 @@ async function sendMessage(body: {
   to: string;
   content: string;
   type: MessageType;
-  senderType: "person";
+  senderType: "agent" | "person";
 }): Promise<Message> {
   const res = await fetch(`${API_BASE_URL}/messages`, {
     method: "POST",
@@ -83,6 +83,7 @@ export function MessagingPage() {
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [senderType, setSenderType] = useState<SenderType>("person");
 
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
     queryKey: ["agents"],
@@ -97,6 +98,9 @@ export function MessagingPage() {
   });
 
   const isBroadcast = selectedAgentId === null && mobileView === "chat";
+  const isInbox = selectedAgentId === "__inbox__";
+  const isRealAgent =
+    !!selectedAgentId && selectedAgentId !== "__inbox__";
 
   const { data: conversationMessages = [] } = useQuery({
     queryKey: ["conversation", DASHBOARD_ID, selectedAgentId],
@@ -104,7 +108,7 @@ export function MessagingPage() {
       selectedAgentId
         ? fetchConversation(DASHBOARD_ID, selectedAgentId)
         : Promise.resolve([]),
-    enabled: !!selectedAgentId,
+    enabled: isRealAgent,
     refetchInterval: 3_000,
   });
 
@@ -118,15 +122,24 @@ export function MessagingPage() {
     [dashboardMessages],
   );
 
-  const chatMessages =
-    isBroadcast || (!selectedAgentId && mobileView !== "chat")
+  const inboxMessages = useMemo(
+    () =>
+      dashboardMessages.filter(
+        (m) => m.to === DASHBOARD_ID && m.senderType === "agent" && m.type !== "broadcast",
+      ),
+    [dashboardMessages],
+  );
+
+  const chatMessages = isInbox
+    ? inboxMessages
+    : isBroadcast || (!selectedAgentId && mobileView !== "chat")
       ? broadcastMessages
       : conversationMessages;
 
   useQuery({
     queryKey: ["markRead", selectedAgentId],
     queryFn: async () => {
-      if (!selectedAgentId) return null;
+      if (!selectedAgentId || selectedAgentId === "__inbox__") return null;
       const unread = conversationMessages.filter(
         (m) => !m.read && m.from === selectedAgentId,
       );
@@ -141,7 +154,7 @@ export function MessagingPage() {
       }
       return null;
     },
-    enabled: !!selectedAgentId && conversationMessages.length > 0,
+    enabled: isRealAgent && conversationMessages.length > 0,
     refetchInterval: false,
   });
 
@@ -164,6 +177,7 @@ export function MessagingPage() {
 
   const handleSend = useCallback(
     (content: string, type: MessageType) => {
+      if (isInbox) return;
       const to =
         isBroadcast || !selectedAgentId ? "broadcast" : selectedAgentId;
       sendMutation.mutate({
@@ -171,10 +185,10 @@ export function MessagingPage() {
         to,
         content,
         type: isBroadcast || !selectedAgentId ? "broadcast" : type,
-        senderType: "person",
+        senderType,
       });
     },
-    [selectedAgentId, isBroadcast, sendMutation],
+    [selectedAgentId, isBroadcast, isInbox, sendMutation, senderType],
   );
 
   const handleSelectAgent = useCallback(
@@ -234,12 +248,16 @@ export function MessagingPage() {
         <div className="flex flex-1 flex-col">
           <ChatView
             agent={selectedAgent}
+            agents={agents}
             messages={chatMessages}
             dashboardId={DASHBOARD_ID}
             onSend={handleSend}
-            isBroadcast={isBroadcast || (!selectedAgentId && !isMobile)}
+            isBroadcast={!isInbox && (isBroadcast || (!selectedAgentId && !isMobile))}
+            isInbox={isInbox}
             onBack={handleBack}
             showBackButton={isMobile}
+            senderType={senderType}
+            onSenderTypeChange={setSenderType}
           />
         </div>
       )}

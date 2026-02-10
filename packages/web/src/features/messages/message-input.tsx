@@ -1,10 +1,15 @@
 import { useRef, useCallback, type KeyboardEvent } from "react";
-import { Send, ChevronDown } from "lucide-react";
+import { Send, ChevronDown, User, Bot } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-import type { MessageType } from "./message-bubble";
+import type { MessageType, SenderType } from "./message-bubble";
 
 const messageTypes: { value: MessageType; label: string }[] = [
   { value: "notification", label: "Notice" },
@@ -16,6 +21,8 @@ interface MessageInputProps {
   disabled?: boolean;
   selectedType: MessageType;
   onTypeChange: (type: MessageType) => void;
+  senderType: SenderType;
+  onSenderTypeChange: (type: SenderType) => void;
 }
 
 export function MessageInput({
@@ -23,8 +30,11 @@ export function MessageInput({
   disabled,
   selectedType,
   onTypeChange,
+  senderType,
+  onSenderTypeChange,
 }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const sendingAsPerson = senderType === "person";
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
@@ -59,6 +69,10 @@ export function MessageInput({
     onTypeChange(next.value);
   }, [selectedType, onTypeChange]);
 
+  const toggleSenderType = useCallback(() => {
+    onSenderTypeChange(sendingAsPerson ? "agent" : "person");
+  }, [sendingAsPerson, onSenderTypeChange]);
+
   const currentTypeLabel =
     messageTypes.find((t) => t.value === selectedType)?.label ?? "Notice";
 
@@ -76,16 +90,54 @@ export function MessageInput({
           <ChevronDown className="size-3 opacity-50" />
         </Button>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={toggleSenderType}
+              className={cn(
+                "relative flex size-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-200",
+                sendingAsPerson
+                  ? "border-indigo-400/50 bg-indigo-500/15 text-indigo-600 dark:border-indigo-500/40 dark:text-indigo-400"
+                  : "border-border bg-muted/40 text-muted-foreground hover:bg-muted",
+              )}
+            >
+              {sendingAsPerson ? (
+                <User className="size-4" />
+              ) : (
+                <Bot className="size-4" />
+              )}
+              <span
+                className={cn(
+                  "absolute -right-0.5 -top-0.5 size-2 rounded-full ring-2 ring-background transition-colors",
+                  sendingAsPerson ? "bg-indigo-500" : "bg-zinc-400",
+                )}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            {sendingAsPerson ? "Sending as Person" : "Sending as Agent"}
+            <span className="ml-1 text-muted-foreground">(click to toggle)</span>
+          </TooltipContent>
+        </Tooltip>
+
         <div
           className={cn(
-            "flex min-h-[36px] flex-1 items-end rounded-xl border bg-muted/40 px-3 py-2",
+            "flex min-h-[36px] flex-1 items-end rounded-xl border px-3 py-2",
             "transition-colors focus-within:border-ring focus-within:bg-background",
+            sendingAsPerson
+              ? "bg-indigo-50/50 dark:bg-indigo-950/20"
+              : "bg-muted/40",
           )}
         >
           <textarea
             ref={textareaRef}
             rows={1}
-            placeholder="Type a message..."
+            placeholder={
+              sendingAsPerson
+                ? "Send as person..."
+                : "Type a message..."
+            }
             disabled={disabled}
             className={cn(
               "w-full resize-none bg-transparent text-sm leading-relaxed outline-none",
@@ -102,7 +154,10 @@ export function MessageInput({
           size="icon"
           disabled={disabled}
           onClick={handleSend}
-          className="size-9 shrink-0 rounded-xl"
+          className={cn(
+            "size-9 shrink-0 rounded-xl",
+            sendingAsPerson && "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600",
+          )}
         >
           <Send className="size-4" />
         </Button>

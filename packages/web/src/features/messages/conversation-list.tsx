@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Radio, MessageSquare } from "lucide-react";
+import { Search, Radio, MessageSquare, Inbox } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -131,6 +131,22 @@ export function ConversationList({
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   )[0];
 
+  const inboxMessages = useMemo(
+    () =>
+      messages.filter(
+        (m) => m.to === dashboardId && m.senderType === "agent" && m.type !== "broadcast",
+      ),
+    [messages, dashboardId],
+  );
+  const inboxUnread = useMemo(
+    () => inboxMessages.filter((m) => !m.read).length,
+    [inboxMessages],
+  );
+  const lastInbox = inboxMessages.sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
+
   const filtered = search
     ? conversations.filter((c) =>
         c.agent.displayName.toLowerCase().includes(search.toLowerCase()),
@@ -202,6 +218,49 @@ export function ConversationList({
                 {lastBroadcast
                   ? lastBroadcast.content
                   : "Send to all online agents"}
+              </p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSelect("__inbox__")}
+            className={cn(
+              "flex items-center gap-3 rounded-xl p-3 text-left transition-colors",
+              "hover:bg-accent/60",
+              selectedAgentId === "__inbox__" && "bg-accent",
+            )}
+          >
+            <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-sky-500 text-white">
+              <Inbox className="size-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className={cn(
+                    "truncate text-sm",
+                    inboxUnread > 0 ? "font-bold" : "font-semibold",
+                  )}
+                >
+                  Dashboard Inbox
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {lastInbox && (
+                    <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+                      {relativeTime(lastInbox.createdAt)}
+                    </span>
+                  )}
+                  {inboxUnread > 0 && (
+                    <Badge className="size-5 justify-center bg-indigo-600 p-0 text-[10px] hover:bg-indigo-600">
+                      {inboxUnread > 9 ? "9+" : inboxUnread}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <p className="truncate text-xs text-muted-foreground">
+                {lastInbox
+                  ? lastInbox.content
+                  : "Messages from agents to you"}
               </p>
             </div>
           </button>

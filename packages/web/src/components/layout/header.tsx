@@ -1,10 +1,18 @@
-import { useRouterState } from "@tanstack/react-router";
-import { SearchIcon } from "lucide-react";
+import { useRouterState, useNavigate } from "@tanstack/react-router";
+import { SearchIcon, Bell } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
+import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useWsStore, type ConnectionStatus } from "@/stores/ws-store";
+import { API_BASE_URL } from "@/lib/api";
 
 const routeLabels: Record<string, string> = {
   "/": "Dashboard",
@@ -73,7 +81,29 @@ interface HeaderProps {
 
 export function Header({ onOpenCommandPalette }: HeaderProps) {
   const routerState = useRouterState();
+  const navigate = useNavigate();
   const crumbs = getBreadcrumb(routerState.location.pathname);
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["a2p-unread"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${API_BASE_URL}/messages?agentId=dashboard&limit=200`,
+      );
+      if (!res.ok) return 0;
+      const json = await res.json();
+      const msgs: { to: string; senderType: string; read: boolean; type: string }[] =
+        json.data ?? [];
+      return msgs.filter(
+        (m) =>
+          m.to === "dashboard" &&
+          m.senderType === "agent" &&
+          !m.read &&
+          m.type !== "broadcast",
+      ).length;
+    },
+    refetchInterval: 5_000,
+  });
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -103,6 +133,30 @@ export function Header({ onOpenCommandPalette }: HeaderProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-3">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/messages" })}
+              className={cn(
+                "relative flex size-8 items-center justify-center rounded-lg transition-colors",
+                "hover:bg-accent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Bell className="size-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-indigo-600 text-[9px] font-bold text-white ring-2 ring-background">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs">
+            {unreadCount > 0
+              ? `${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}`
+              : "No new messages"}
+          </TooltipContent>
+        </Tooltip>
         <ConnectionIndicator />
         <Separator orientation="vertical" className="h-4!" />
         <Button

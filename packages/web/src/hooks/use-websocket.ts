@@ -104,12 +104,24 @@ export function useWebSocket() {
         }
 
         case "message": {
-          const payload = msg.payload as { from?: string } | undefined;
+          const payload = msg.payload as {
+            from?: string;
+            to?: string;
+            senderType?: string;
+          } | undefined;
           queryClient.invalidateQueries({ queryKey: ["messages"] });
+          queryClient.invalidateQueries({ queryKey: ["a2p-unread"] });
           incrementUnread();
 
+          const isA2P =
+            payload?.to === "dashboard" && payload?.senderType === "agent";
+
           if (!window.location.pathname.startsWith("/messages")) {
-            toast.info(`New message from ${payload?.from ?? "unknown"}`);
+            toast.info(
+              isA2P
+                ? `Agent ${payload?.from ?? "unknown"} sent you a message`
+                : `New message from ${payload?.from ?? "unknown"}`,
+            );
           }
           break;
         }
