@@ -34,7 +34,9 @@ describe('MessageService', () => {
     const msg = createMessage({
       from: 'a1',
       to: 'a2',
+      senderType: 'agent',
       content: 'hello bob',
+      type: 'notification',
     });
 
     expect(msg).not.toBeInstanceOf(Array);
@@ -50,8 +52,8 @@ describe('MessageService', () => {
     seedAgent('a1', 'alice');
     seedAgent('a2', 'bob');
 
-    createMessage({ from: 'a1', to: 'a2', content: 'msg-1' });
-    createMessage({ from: 'a1', to: 'a2', content: 'msg-2' });
+    createMessage({ from: 'a1', to: 'a2', senderType: 'agent', content: 'msg-1', type: 'notification' });
+    createMessage({ from: 'a1', to: 'a2', senderType: 'agent', content: 'msg-2', type: 'notification' });
 
     const msgs = getMessagesForAgent('a2');
     expect(msgs).toHaveLength(2);
@@ -66,7 +68,9 @@ describe('MessageService', () => {
     const result = createMessage({
       from: 'a1',
       to: 'broadcast',
+      senderType: 'agent',
       content: 'hey everyone',
+      type: 'notification',
     });
 
     expect(Array.isArray(result)).toBe(true);
@@ -81,7 +85,7 @@ describe('MessageService', () => {
     const bigContent = 'x'.repeat(1_048_577);
 
     expect(() =>
-      createMessage({ from: 'a1', to: 'a2', content: bigContent }),
+      createMessage({ from: 'a1', to: 'a2', senderType: 'agent', content: bigContent, type: 'notification' }),
     ).toThrow(MessageSizeError);
   });
 
@@ -89,9 +93,9 @@ describe('MessageService', () => {
     seedAgent('a1', 'alice');
     seedAgent('a2', 'bob');
 
-    createMessage({ from: 'a1', to: 'a2', content: 'hi bob' });
-    createMessage({ from: 'a2', to: 'a1', content: 'hi alice' });
-    createMessage({ from: 'a1', to: 'a2', content: 'how are you?' });
+    createMessage({ from: 'a1', to: 'a2', senderType: 'agent', content: 'hi bob', type: 'notification' });
+    createMessage({ from: 'a2', to: 'a1', senderType: 'agent', content: 'hi alice', type: 'notification' });
+    createMessage({ from: 'a1', to: 'a2', senderType: 'agent', content: 'how are you?', type: 'notification' });
 
     const convo = getConversation('a1', 'a2');
     expect(convo).toHaveLength(3);
