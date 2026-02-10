@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "npx concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/web\"",
+    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/sdk && npm run build -w packages/cli && npm run build -w packages/web",
+    "test": "npm run test -w packages/server && npm run test -w packages/web && npm run test -w packages/cli",
     "test:e2e": "vitest run --config tests/vitest.config.ts"
   },
   "workspaces": [
@@ -10,6 +13,7 @@
   ],
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "concurrently": "^9.2.1",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
