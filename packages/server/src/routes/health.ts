@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { getAgentCount } from '../services/agent-service.js';
 
 const health = new Hono();
 
@@ -11,7 +12,7 @@ health.get('/health', (c) => {
     status: 'ok',
     version: '0.1.0',
     uptime: uptimeSeconds,
-    agentCount: 0,
+    agentCount: getAgentCount(),
   });
 });
 
