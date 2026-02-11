@@ -1,4 +1,5 @@
 import type { WSContext } from 'hono/ws';
+import { DAEMON_KEY } from '@swarmroom/shared';
 import type { WSMessage, WSMessageType } from '@swarmroom/shared';
 
 const DASHBOARD_KEY = '__dashboard__';
@@ -129,6 +130,15 @@ export function sendToDashboards(type: WSMessageType, payload: unknown): void {
   sendToClient(DASHBOARD_KEY, type, payload);
 }
 
+export function sendToDaemons(type: WSMessageType, payload: unknown): void {
+  sendToClient(DAEMON_KEY, type, payload);
+}
+
+export function hasActiveConnections(clientId: string): boolean {
+  const connections = clients.get(clientId);
+  return !!connections && connections.length > 0;
+}
+
 // ─── Message Handling ────────────────────────────────────────────────────────
 
 export function handleIncomingMessage(ws: WSContext, raw: string): void {
@@ -152,6 +162,9 @@ export function handleIncomingMessage(ws: WSContext, raw: string): void {
       if (payload?.clientType === 'dashboard') {
         registerClient(DASHBOARD_KEY, ws);
         safeSend(ws, makeMessage('register', { status: 'ok', clientType: 'dashboard' }));
+      } else if (payload?.clientType === 'daemon') {
+        registerClient(DAEMON_KEY, ws);
+        safeSend(ws, makeMessage('register', { status: 'ok', clientType: 'daemon' }));
       } else if (payload?.agentId) {
         registerClient(payload.agentId, ws);
         safeSend(ws, makeMessage('register', { status: 'ok', agentId: payload.agentId }));

@@ -14,3 +14,6 @@ export const MCP_TOOL_NAMES = {
   LIST_TEAMS: 'list_teams',
   LIST_PROJECTS: 'list_projects',
 } as const;
+
+export const DAEMON_KEY = '__daemon__';
+export const DAEMON_SPAWN_COOLDOWN_MS = 60_000;

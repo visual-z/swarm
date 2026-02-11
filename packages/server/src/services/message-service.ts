@@ -2,7 +2,7 @@ import { eq, and, or, desc, asc, gt, type SQL } from 'drizzle-orm';
 import { db, messages, agents } from '../db/index.js';
 import type { SendMessageRequest } from '@swarmroom/shared';
 import { MAX_MESSAGE_SIZE_BYTES } from '@swarmroom/shared';
-import { pushMessageToRecipient } from './ws-manager.js';
+import { pushMessageToRecipient, hasActiveConnections, sendToDaemons } from './ws-manager.js';
 
 export function createMessage(input: SendMessageRequest) {
   const contentBytes = new TextEncoder().encode(input.content).length;
@@ -58,6 +58,23 @@ export function createMessage(input: SendMessageRequest) {
 
     for (const msg of createdMessages) {
       pushMessageToRecipient(msg.to, msg);
+
+      // Notify daemons if recipient has no active WebSocket connections
+      if (!hasActiveConnections(msg.to)) {
+        const recipient = db
+          .select({ name: agents.name })
+          .from(agents)
+          .where(eq(agents.id, msg.to))
+          .get();
+
+        if (recipient) {
+          sendToDaemons('message_undelivered', {
+            recipientAgentId: msg.to,
+            recipientAgentName: recipient.name,
+            message: msg,
+          });
+        }
+      }
     }
 
     return createdMessages;
@@ -81,6 +98,22 @@ export function createMessage(input: SendMessageRequest) {
 
   const created = getMessageById(id)!;
   pushMessageToRecipient(created.to, created);
+
+  if (!hasActiveConnections(created.to)) {
+    const recipient = db
+      .select({ name: agents.name })
+      .from(agents)
+      .where(eq(agents.id, created.to))
+      .get();
+
+    if (recipient) {
+      sendToDaemons('message_undelivered', {
+        recipientAgentId: created.to,
+        recipientAgentName: recipient.name,
+        message: created,
+      });
+    }
+  }
 
   return created;
 }

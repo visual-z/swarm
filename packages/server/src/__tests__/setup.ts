@@ -85,6 +85,8 @@ vi.mock('../services/ws-manager.js', () => ({
   broadcast: vi.fn(),
   sendToClient: vi.fn(),
   sendToDashboards: vi.fn(),
+  sendToDaemons: vi.fn(),
+  hasActiveConnections: vi.fn(() => false),
 }));
 
 beforeEach(() => {

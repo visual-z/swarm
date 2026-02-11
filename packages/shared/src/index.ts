@@ -6,6 +6,8 @@ export {
   MAX_MESSAGE_SIZE_BYTES,
   WS_RECONNECT_DELAY_MS,
   MCP_TOOL_NAMES,
+  DAEMON_KEY,
+  DAEMON_SPAWN_COOLDOWN_MS,
 } from './constants.js';
 
 export {
@@ -63,3 +65,12 @@ export {
   ApiResponseSchema,
   PaginatedResponseSchema,
 } from './types/api.js';
+
+export {
+  type AgentWakeupConfig,
+  type DaemonConfig,
+  type MessageUndeliveredPayload,
+  AgentWakeupConfigSchema,
+  DaemonConfigSchema,
+  MessageUndeliveredPayloadSchema,
+} from './types/daemon.js';

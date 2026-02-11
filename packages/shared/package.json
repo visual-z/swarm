@@ -1,13 +1,22 @@
 {
   "name": "@swarmroom/shared",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "description": "Shared types, schemas, and constants for SwarmRoom",
+  "keywords": ["swarmroom", "shared", "types", "schemas"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/swarm-room.git",
+    "directory": "packages/shared"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "zod": "^4.3.6"

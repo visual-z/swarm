@@ -7,6 +7,7 @@ export const WSMessageTypeSchema = z.enum([
   'agent_offline',
   'heartbeat',
   'error',
+  'message_undelivered',
 ]);
 
 export const WSMessageSchema = z.object({

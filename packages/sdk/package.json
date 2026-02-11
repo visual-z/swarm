@@ -1,16 +1,25 @@
 {
   "name": "@swarmroom/sdk",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "description": "TypeScript SDK for SwarmRoom - connect AI agents to the SwarmRoom hub",
+  "keywords": ["swarmroom", "sdk", "agent", "mcp", "ai", "client"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/swarm-room.git",
+    "directory": "packages/sdk"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@swarmroom/shared": "^0.0.0",
+    "@swarmroom/shared": "^0.1.0",
     "ws": "^8.19.0"
   },
   "devDependencies": {
