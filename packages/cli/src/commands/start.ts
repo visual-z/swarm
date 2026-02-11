@@ -1,8 +1,7 @@
 import { Command } from 'commander';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import chalk from 'chalk';
 import { DaemonWatcher } from '../daemon/watcher.js';
 import { banner, keyValue, info, error } from '../utils/display.js';
@@ -10,9 +9,8 @@ import { banner, keyValue, info, error } from '../utils/display.js';
 const HUB_STARTUP_DELAY_MS = 2000;
 
 function resolveServerEntry(): string {
-  const thisFile = fileURLToPath(import.meta.url);
-  const cliRoot = resolve(thisFile, '..', '..');
-  return resolve(cliRoot, '..', 'server', 'dist', 'index.js');
+  const require = createRequire(import.meta.url);
+  return require.resolve('@swarmroom/server/dist/index.js');
 }
 
 function prefixLines(prefix: string, data: Buffer): void {
