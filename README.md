@@ -41,15 +41,15 @@ npx swarmroom setup
 ### 从源码安装
 
 ```bash
-git clone https://github.com/anthropics/swarm-room.git
+git clone https://github.com/visual-z/swarm-room.git
 cd swarm-room
 npm install
 npm run build
 
 # 开发模式启动（Hub + Web 仪表盘）
 npm run dev
-# Hub API: http://localhost:3000
-# 仪表盘: http://localhost:5173
+# Hub API: http://localhost:39187
+# 仪表盘: http://localhost:5173（Vite 开发服务器，自动代理 API 到 39187）
 ```
 
 启动后运行 `npx swarmroom setup`，自动检测已安装的 AI Agent（Claude Code、OpenCode、Gemini CLI），写入 MCP 配置让它们连接到 SwarmRoom。
@@ -58,10 +58,10 @@ npm run dev
 
 | 命令 | 说明 |
 |------|------|
-| `swarmroom start` | 启动 Hub + Daemon |
-| `swarmroom start --hub-only` | 仅启动 Hub 服务 |
+| `swarmroom start` | 启动 Hub + Web 仪表盘 + Daemon |
+| `swarmroom start --server-only` | 仅启动 Hub 服务 API（不启动 Web 仪表盘）+ Daemon |
 | `swarmroom start --daemon-only` | 仅启动守护进程 |
-| `swarmroom start --port <port>` | 指定 Hub 端口（默认 3000） |
+| `swarmroom start --port <port>` | 指定 Hub 端口（默认 39187） |
 | `swarmroom start --verbose` | 开启详细日志 |
 | `swarmroom setup` | 自动检测并配置 AI Agent |
 | `swarmroom setup --non-interactive` | 非交互式配置（自动选择检测到的 Agent） |
@@ -120,17 +120,16 @@ swarmroom daemon config
                     |                               |
                     +--------->  [Hub]  <-----------+
                                (Hono)
-                            port 3000
+                            port 39187
+                     API + Web 仪表盘 + WebSocket
                                 |
                     +-----------+-----------+
                     |                       |
               [SQLite DB]            [Daemon 守护进程]
              swarmroom.db            消息未送达时唤醒
-                    |
-              [Web 仪表盘]
-              (Vite + React)
-               port 5173
 ```
+
+生产模式下，Web 仪表盘打包后直接由 Hub 服务器在同一端口（39187）提供。开发模式下，Vite 开发服务器运行在 5173 端口，API 请求代理到 39187。
 
 **数据流：**
 
@@ -217,7 +216,7 @@ AI Agent 通过以下 MCP 工具与 SwarmRoom 交互：
 {
   "mcpServers": {
     "swarmroom": {
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:39187/mcp"
     }
   }
 }
@@ -235,7 +234,7 @@ const hubUrl = await discoverHub();
 
 // 创建并连接客户端
 const client = new SwarmRoomClient({
-  hubUrl: hubUrl ?? 'http://localhost:3000',
+  hubUrl: hubUrl ?? 'http://localhost:39187',
   agentName: 'my-agent',
   capabilities: ['code-review', 'testing'],
 });
@@ -285,7 +284,7 @@ await client.disconnect();
 
 | 变量 / 常量 | 默认值 | 说明 |
 |------------|--------|------|
-| `DEFAULT_PORT` | `3000` | Hub HTTP 服务端口 |
+| `DEFAULT_PORT` | `39187` | Hub HTTP 服务端口 |
 | `HEARTBEAT_INTERVAL_MS` | `30000` | Agent 心跳间隔（毫秒） |
 | `STALE_TIMEOUT_MS` | `90000` | Agent 超时标记为离线的时间（毫秒） |
 | `MAX_MESSAGE_SIZE_BYTES` | `1048576` | 消息内容最大体积（1 MB） |
@@ -344,16 +343,16 @@ mDNS 使用 UDP 端口 5353 的组播通信，常见问题：
 - **防火墙**：确保 5353/UDP 端口的入站和出站流量都已放行
 - **Docker/虚拟机**：mDNS 需要使用宿主机网络模式，桥接网络会阻断组播
 - **不同子网**：mDNS 只在同一广播域（同一网段）内工作
-- **解决办法**：跳过 mDNS，直接用 `http://主机名:3000` 连接
+- **解决办法**：跳过 mDNS，直接用 `http://主机名:39187` 连接
 
-### 端口 3000 被占用
+### 端口 39187 被占用
 
 ```bash
-# 查看谁在用 3000 端口
-lsof -i :3000
+# 查看谁在用 39187 端口
+lsof -i :39187
 
 # 终止占用进程，或者用 --port 指定其他端口
-swarmroom start --port 3001
+swarmroom start --port 39188
 ```
 
 ### WebSocket 连接问题

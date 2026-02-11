@@ -1,5 +1,5 @@
 export const MDNS_SERVICE_TYPE = '_swarmroom._tcp';
-export const DEFAULT_PORT = 3000;
+export const DEFAULT_PORT = 39187;
 export const HEARTBEAT_INTERVAL_MS = 30_000;
 export const STALE_TIMEOUT_MS = 90_000;
 export const MAX_MESSAGE_SIZE_BYTES = 1_048_576; // 1MB

@@ -12,7 +12,7 @@ export type AgentWakeupConfig = z.infer<typeof AgentWakeupConfigSchema>;
 
 // Full daemon configuration
 export const DaemonConfigSchema = z.object({
-  hubUrl: z.string().default('http://localhost:3000'),
+  hubUrl: z.string().default('http://localhost:39187'),
   agents: z.record(z.string(), AgentWakeupConfigSchema).default({}),
 });
 

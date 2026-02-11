@@ -22,6 +22,7 @@
   "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc",
+    "postbuild": "node -e \"const fs=require('fs'),p=require('path'),s=p.join(__dirname,'../web/dist'),d=p.join(__dirname,'dist/public');fs.existsSync(s)?(fs.cpSync(s,d,{recursive:true}),console.log('Web dashboard bundled')):console.log('Web dist not found, skipping')\"",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",

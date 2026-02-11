@@ -41,7 +41,7 @@ describe('getDefaultConfig', () => {
   it('returns config with hubUrl and three agents', () => {
     const config = getDefaultConfig();
 
-    expect(config.hubUrl).toBe('http://localhost:3000');
+    expect(config.hubUrl).toBe('http://localhost:39187');
     expect(Object.keys(config.agents)).toHaveLength(3);
     expect(config.agents).toHaveProperty('claude-code');
     expect(config.agents).toHaveProperty('opencode');

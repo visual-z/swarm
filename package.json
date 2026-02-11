@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/web\"",
-    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/sdk && npm run build -w packages/cli && npm run build -w packages/web",
+    "build": "npm run build -w packages/shared && npm run build -w packages/web && npm run build -w packages/server && npm run build -w packages/sdk && npm run build -w packages/cli",
     "test": "npm run test -w packages/server && npm run test -w packages/web && npm run test -w packages/cli",
     "test:e2e": "vitest run --config tests/vitest.config.ts",
     "publish:all": "npm run build && npm publish -w packages/shared && npm publish -w packages/server && npm publish -w packages/sdk && npm publish -w packages/cli"

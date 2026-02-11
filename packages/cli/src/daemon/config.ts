@@ -19,7 +19,7 @@ export function getConfigPath(): string {
  */
 export function getDefaultConfig(): DaemonConfig {
   return {
-    hubUrl: 'http://localhost:3000',
+    hubUrl: 'http://localhost:39187',
     agents: {
       'claude-code': {
         headlessWakeup: false,

@@ -14,8 +14,11 @@ import { wellKnown } from './routes/well-known.js';
 import { mcpRoute } from './mcp/transport.js';
 
 const __dirname = resolve(fileURLToPath(import.meta.url), '..');
-const webDistPath = resolve(__dirname, '../../web/dist');
-const webDistExists = existsSync(webDistPath);
+// Try bundled location first (npm install), then monorepo location (dev)
+const bundledWebPath = resolve(__dirname, 'public');
+const monorepoWebPath = resolve(__dirname, '../../web/dist');
+const webDistPath = existsSync(bundledWebPath) ? bundledWebPath : monorepoWebPath;
+const webDistExists = existsSync(webDistPath) && !process.env.SWARMROOM_NO_WEB;
 
 const app = new Hono();
 
@@ -30,8 +33,20 @@ app.route('/api/projects', projectsRoute);
 app.route('/mcp', mcpRoute);
 
 if (webDistExists) {
-  app.use('*', serveStatic({ root: webDistPath }));
-  app.get('*', serveStatic({ root: webDistPath, path: '/index.html' }));
+  app.use(
+    '*',
+    serveStatic({
+      root: '',
+      rewriteRequestPath: (path) => `${webDistPath}${path}`,
+    }),
+  );
+  app.get(
+    '*',
+    serveStatic({
+      root: '',
+      rewriteRequestPath: () => `${webDistPath}/index.html`,
+    }),
+  );
 } else {
   app.get('/', (c) => {
     return c.json({
