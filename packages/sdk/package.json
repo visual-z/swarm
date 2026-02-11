@@ -5,9 +5,12 @@
   "description": "TypeScript SDK for SwarmRoom - connect AI agents to the SwarmRoom hub",
   "keywords": ["swarmroom", "sdk", "agent", "mcp", "ai", "client"],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/swarm-room.git",
+    "url": "https://github.com/visual-z/swarm.git",
     "directory": "packages/sdk"
   },
   "main": "dist/index.js",

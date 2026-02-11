@@ -5,9 +5,12 @@
   "description": "SwarmRoom hub server - HTTP, WebSocket, MCP, and mDNS services",
   "keywords": ["swarmroom", "server", "hub", "mcp", "websocket"],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/swarm-room.git",
+    "url": "https://github.com/visual-z/swarm.git",
     "directory": "packages/server"
   },
   "main": "dist/index.js",

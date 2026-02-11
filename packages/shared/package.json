@@ -5,9 +5,12 @@
   "description": "Shared types, schemas, and constants for SwarmRoom",
   "keywords": ["swarmroom", "shared", "types", "schemas"],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/swarm-room.git",
+    "url": "https://github.com/visual-z/swarm.git",
     "directory": "packages/shared"
   },
   "main": "dist/index.js",
