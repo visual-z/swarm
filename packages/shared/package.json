@@ -1,9 +1,14 @@
 {
   "name": "@swarmroom/shared",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Shared types, schemas, and constants for SwarmRoom",
-  "keywords": ["swarmroom", "shared", "types", "schemas"],
+  "keywords": [
+    "swarmroom",
+    "shared",
+    "types",
+    "schemas"
+  ],
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -19,7 +24,11 @@
     ".": "./dist/index.js",
     "./dist/*": "./dist/*"
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

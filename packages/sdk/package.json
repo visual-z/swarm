@@ -1,6 +1,6 @@
 {
   "name": "@swarmroom/sdk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "TypeScript SDK for SwarmRoom - connect AI agents to the SwarmRoom hub",
   "keywords": [
