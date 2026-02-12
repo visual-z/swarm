@@ -17,3 +17,4 @@ export const MCP_TOOL_NAMES = {
 
 export const DAEMON_KEY = '__daemon__';
 export const DAEMON_SPAWN_COOLDOWN_MS = 60_000;
+export const DAEMON_SPAWN_TIMEOUT_MS = 300_000; // 5 minutes

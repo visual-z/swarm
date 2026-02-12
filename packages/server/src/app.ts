@@ -10,6 +10,7 @@ import { agentsRoute } from './routes/agents.js';
 import { messagesRoute } from './routes/messages.js';
 import { teamsRoute } from './routes/teams.js';
 import { projectsRoute } from './routes/projects.js';
+import { skillsRoute } from './routes/skills.js';
 import { wellKnown } from './routes/well-known.js';
 import { mcpRoute } from './mcp/transport.js';
 
@@ -30,6 +31,7 @@ app.route('/api/agents', agentsRoute);
 app.route('/api/messages', messagesRoute);
 app.route('/api/teams', teamsRoute);
 app.route('/api/projects', projectsRoute);
+app.route('/api/skills', skillsRoute);
 app.route('/mcp', mcpRoute);
 
 if (webDistExists) {

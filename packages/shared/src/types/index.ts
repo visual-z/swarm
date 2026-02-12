@@ -1,20 +1,7 @@
 export {
-  MDNS_SERVICE_TYPE,
-  DEFAULT_PORT,
-  HEARTBEAT_INTERVAL_MS,
-  STALE_TIMEOUT_MS,
-  MAX_MESSAGE_SIZE_BYTES,
-  WS_RECONNECT_DELAY_MS,
-  MCP_TOOL_NAMES,
-  DAEMON_KEY,
-  DAEMON_SPAWN_COOLDOWN_MS,
-  DAEMON_SPAWN_TIMEOUT_MS,
-} from './constants.js';
-
-export {
   type SkillInfo,
   type SkillSummary,
-} from './types/skill.js';
+} from './skill.js';
 
 export {
   type AgentStatus,
@@ -29,7 +16,7 @@ export {
   AgentSchema,
   RegisterAgentRequestSchema,
   HeartbeatRequestSchema,
-} from './types/agent.js';
+} from './agent.js';
 
 export {
   type MessageType,
@@ -42,35 +29,35 @@ export {
   MessageSchema,
   SendMessageRequestSchema,
   GetMessagesQuerySchema,
-} from './types/message.js';
+} from './message.js';
 
 export {
   type Team,
   type CreateTeamRequest,
   TeamSchema,
   CreateTeamRequestSchema,
-} from './types/team.js';
+} from './team.js';
 
 export {
   type ProjectGroup,
   type CreateProjectRequest,
   ProjectGroupSchema,
   CreateProjectRequestSchema,
-} from './types/project.js';
+} from './project.js';
 
 export {
   type WSMessageType,
   type WSMessage,
   WSMessageTypeSchema,
   WSMessageSchema,
-} from './types/ws.js';
+} from './ws.js';
 
 export {
   type ApiResponse,
   type PaginatedResponse,
   ApiResponseSchema,
   PaginatedResponseSchema,
-} from './types/api.js';
+} from './api.js';
 
 export {
   type AgentWakeupConfig,
@@ -79,4 +66,4 @@ export {
   AgentWakeupConfigSchema,
   DaemonConfigSchema,
   MessageUndeliveredPayloadSchema,
-} from './types/daemon.js';
+} from './daemon.js';

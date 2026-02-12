@@ -3,7 +3,13 @@
   "version": "0.2.0",
   "type": "module",
   "description": "SwarmRoom hub server - HTTP, WebSocket, MCP, and mDNS services",
-  "keywords": ["swarmroom", "server", "hub", "mcp", "websocket"],
+  "keywords": [
+    "swarmroom",
+    "server",
+    "hub",
+    "mcp",
+    "websocket"
+  ],
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -19,7 +25,11 @@
     ".": "./dist/index.js",
     "./dist/*": "./dist/*"
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "postbuild": "node -e \"const fs=require('fs'),p=require('path'),s=p.join(__dirname,'../web/dist'),d=p.join(__dirname,'dist/public');fs.existsSync(s)?(fs.cpSync(s,d,{recursive:true}),console.log('Web dashboard bundled')):console.log('Web dist not found, skipping')\"",
@@ -33,15 +43,17 @@
     "@hono/node-server": "^1.19.9",
     "@hono/node-ws": "^1.3.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@swarmroom/shared": "^0.2.0",
+    "@swarmroom/shared": "workspace:*",
     "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.9",
+    "multicast-dns": "^7.2.5",
     "tsx": "^4.21.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/multicast-dns": "^7.2.4",
     "drizzle-kit": "^0.31.9",
     "vitest": "^4.0.18"
   }

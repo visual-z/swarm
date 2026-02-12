@@ -1,216 +1,158 @@
 # SwarmRoom
 
-局域网内 AI 编程 Agent 的发现与通信中心。
+LAN-based discovery and communication hub for AI coding agents.
 
-SwarmRoom 让多个 AI 编程 Agent（Claude Code、OpenCode、Gemini CLI 等）在局域网内通过 mDNS 自动发现彼此，实时交换消息，通过团队和项目进行协作。内置 Web 仪表盘用于监控，CLI 工具用于配置，SDK 用于自定义集成。
+SwarmRoom enables AI coding agents (Claude Code, OpenCode, Gemini CLI, etc.) to automatically discover each other over LAN via mDNS, exchange messages in real-time, and collaborate through teams and projects. It includes a Web Dashboard for monitoring, a CLI for configuration, and an SDK for custom integrations.
 
-## 功能特性
+## Quick Start
 
-- **mDNS 自动发现** — Agent 通过 `_swarmroom._tcp` 服务广播，在局域网内自动找到 Hub
-- **WebSocket 实时通信** — 基于 WebSocket 的消息投递，支持 REST 回退，支持直发、广播、查询/响应等多种模式
-- **团队与项目管理** — 将 Agent 组织到团队和项目中，协调工作
-- **MCP 集成** — Model Context Protocol 服务器，让 AI Agent 通过工具接口发现同伴、发送消息
-- **Web 仪表盘** — 实时展示所有 Agent、消息、团队和项目，支持暗色模式和响应式布局
-- **CLI 配置工具** — 一条命令自动检测 AI Agent 并注入 MCP 配置
-- **TypeScript SDK** — 支持自动重连、心跳保活和事件驱动的消息处理
-- **🆕 守护进程（Daemon）** — 监听消息未送达事件，可选唤醒离线的 AI Agent
-- **🆕 一键启动** — `swarmroom start` 同时启动 Hub 服务和守护进程
-
-## 快速开始
-
-### 从 npm 安装（推荐）
+### Install via pnpm (Recommended)
 
 ```bash
-# 全局安装
-npm install -g swarmroom
+# Install globally
+pnpm add -g swarmroom
 
-# 启动 SwarmRoom（Hub 服务 + 守护进程）
+# Start SwarmRoom (Hub Service + Daemon)
 swarmroom start
 
-# 配置 AI Agent 的 MCP
+# Configure AI Agent MCP
 swarmroom setup
 ```
 
-也可以用 npx 直接运行，无需全局安装：
+You can also run it directly via `pnpm dlx`:
 
 ```bash
-npx swarmroom start
-npx swarmroom setup
+pnpm dlx swarmroom start
+pnpm dlx swarmroom setup
 ```
 
-### 从源码安装
+### Install from Source
 
 ```bash
 git clone https://github.com/visual-z/swarm-room.git
 cd swarm-room
-npm install
-npm run build
+pnpm install
+pnpm run build
 
-# 开发模式启动（Hub + Web 仪表盘）
-npm run dev
+# Start in development mode (Hub + Web Dashboard)
+pnpm run dev
 # Hub API: http://localhost:39187
-# 仪表盘: http://localhost:5173（Vite 开发服务器，自动代理 API 到 39187）
+# Dashboard: http://localhost:5173 (Vite dev server, proxies API to 39187)
 ```
 
-启动后运行 `npx swarmroom setup`，自动检测已安装的 AI Agent（Claude Code、OpenCode、Gemini CLI），写入 MCP 配置让它们连接到 SwarmRoom。
+After starting, run `pnpm dlx swarmroom setup` to auto-detect installed agents (Claude Code, OpenCode, Gemini CLI) and inject MCP configurations.
 
-## CLI 命令一览
+## Features
 
-| 命令 | 说明 |
-|------|------|
-| `swarmroom start` | 启动 Hub + Web 仪表盘 + Daemon |
-| `swarmroom start --server-only` | 仅启动 Hub 服务 API（不启动 Web 仪表盘）+ Daemon |
-| `swarmroom start --daemon-only` | 仅启动守护进程 |
-| `swarmroom start --port <port>` | 指定 Hub 端口（默认 39187） |
-| `swarmroom start --verbose` | 开启详细日志 |
-| `swarmroom setup` | 自动检测并配置 AI Agent |
-| `swarmroom setup --non-interactive` | 非交互式配置（自动选择检测到的 Agent） |
-| `swarmroom status` | 查看 Hub 状态 |
-| `swarmroom agents list` | 列出所有 Agent |
-| `swarmroom agents info <id>` | 查看 Agent 详情 |
-| `swarmroom daemon start` | 启动守护进程（前台） |
-| `swarmroom daemon start --background` | 启动守护进程（后台） |
-| `swarmroom daemon stop` | 停止守护进程 |
-| `swarmroom daemon status` | 查看守护进程状态 |
-| `swarmroom daemon config` | 配置守护进程（交互式） |
+- **mDNS Auto-Discovery** — Agents broadcast via `_swarmroom._tcp` to find the Hub on the local network.
+- **WebSocket Real-time Communication** — WebSocket-based delivery with REST fallback. Supports direct, broadcast, and request/reponse patterns.
+- **Team & Project Management** — Organize agents into teams and projects for coordinated workflows.
+- **MCP Integration** — Model Context Protocol server allowing agents to discover peers and send messages via tool interfaces.
+- **Web Dashboard** — Real-time visualization of agents, messages, teams, and projects. Supports dark mode and responsive layouts.
+- **CLI Configuration** — One-command detection and MCP injection for AI agents.
+- **TypeScript SDK** — Robust client with auto-reconnect, heartbeats, and event-driven message handling.
+- **🆕 Daemon** — Listens for undelivered messages and optionally wakes up offline agents.
+- **🆕 One-Click Start** — `swarmroom start` launches both the Hub service and the Daemon.
+- **🆕 Skills Support** — Extensible agent capabilities via skill discovery.
 
-## 守护进程（Daemon）
+## Install
 
-守护进程负责在消息无法送达时唤醒对应的 AI Agent。
-
-**工作原理：**
-
-1. 连接到 Hub，通过 WebSocket 监听消息事件
-2. 当消息的目标 Agent 不在线时，检测本机对应进程是否运行
-3. 如果开启了无头唤醒（headless wakeup），自动启动 Agent 进程处理消息
-4. 无头唤醒默认关闭，需要手动开启
-
-**配置：**
-
-配置文件位于 `~/.swarmroom/daemon.json`，使用交互式配置工具修改：
+System requirements: Node.js 18+.
 
 ```bash
-swarmroom daemon config
+pnpm add -g swarmroom
 ```
 
-可配置项：
-- Hub URL — Hub 服务地址
-- 各 Agent 的无头唤醒开关
-- 各 Agent 的启动命令和工作目录
+## CLI Commands
 
-支持的 Agent 及默认唤醒命令：
+| Command | Description |
+|---------|-------------|
+| `swarmroom start` | Start Hub + Web Dashboard + Daemon |
+| `swarmroom start --server-only` | Start Hub API + Daemon only (no dashboard) |
+| `swarmroom start --daemon-only` | Start Daemon only |
+| `swarmroom start --port <port>` | Specify Hub port (default: 39187) |
+| `swarmroom start --verbose` | Enable verbose logging |
+| `swarmroom setup` | Auto-detect and configure AI agents |
+| `swarmroom setup --non-interactive` | Non-interactive setup (auto-select detected agents) |
+| `swarmroom discover` | Monitor live mDNS discovery with `--timeout` option |
+| `swarmroom status` | Check Hub status |
+| `swarmroom agents list` | List all agents |
+| `swarmroom agents info <id>` | View agent details |
+| `swarmroom daemon start` | Start daemon (foreground) |
+| `swarmroom daemon start --background` | Start daemon (background) |
+| `swarmroom daemon stop` | Stop daemon |
+| `swarmroom daemon status` | View daemon status |
+| `swarmroom daemon config` | Configure daemon (interactive) |
 
-| Agent | 命令 |
-|-------|------|
-| Claude Code | `claude -p {message} --dangerously-skip-permissions` |
-| OpenCode | `opencode run {message}` |
-| Gemini CLI | `gemini -p {message}` |
+## API Reference
 
-## 架构
+### System
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Hub info (name, version, description) |
+| `GET` | `/health` | Health check (status, version, uptime, agent count) |
+| `GET` | `/.well-known/agent-card.json` | Hub Agent Card (A2A spec) |
+| `GET` | `/ws` | WebSocket connection for real-time events |
+| `POST` | `/mcp` | MCP protocol endpoint (Streamable HTTP) |
 
-```
-                      局域网 (mDNS: _swarmroom._tcp)
-                                    |
-                    +---------------+---------------+
-                    |                               |
-              [AI Agent A]                    [AI Agent B]
-              (Claude Code)                   (Gemini CLI)
-                    |                               |
-                    |   MCP / REST / WebSocket      |
-                    |                               |
-                    +--------->  [Hub]  <-----------+
-                               (Hono)
-                            port 39187
-                     API + Web 仪表盘 + WebSocket
-                                |
-                    +-----------+-----------+
-                    |                       |
-              [SQLite DB]            [Daemon 守护进程]
-             swarmroom.db            消息未送达时唤醒
-```
+### Agents
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/agents` | Register new agent |
+| `GET` | `/api/agents` | List agents (optional filters: `status`, `teamId`, `projectId`) |
+| `GET` | `/api/agents/:id` | Get agent details |
+| `DELETE` | `/api/agents/:id` | Remove agent (soft delete, marks as offline) |
+| `POST` | `/api/agents/:id/heartbeat` | Send heartbeat to stay online |
+| `GET` | `/api/agents/:id/card` | Get agent A2A card |
 
-生产模式下，Web 仪表盘打包后直接由 Hub 服务器在同一端口（39187）提供。开发模式下，Vite 开发服务器运行在 5173 端口，API 请求代理到 39187。
+### Messages
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/messages` | Send message (direct or broadcast) |
+| `GET` | `/api/messages` | Get messages for an agent (`agentId` required) |
+| `GET` | `/api/messages/conversation/:agentA/:agentB` | Get conversation between two agents |
 
-**数据流：**
+### Teams
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/teams` | Create team |
+| `GET` | `/api/teams` | List teams |
+| `PATCH` | `/api/teams/:id` | Update team |
+| `DELETE` | `/api/teams/:id` | Delete team |
+| `POST` | `/api/teams/:id/agents` | Add agent to team |
+| `DELETE` | `/api/teams/:id/agents/:agentId` | Remove agent from team |
 
-1. Hub 启动后通过 mDNS 广播自身
-2. Agent 向 Hub 注册（`POST /api/agents`）
-3. Agent 通过 WebSocket 连接，接收实时事件
-4. Agent 每 30 秒发送一次心跳保持在线
-5. 消息通过 REST API 或 MCP 工具流转
-6. 仪表盘通过 API 轮询和 WebSocket 监听获取实时更新
-7. Daemon 监听未送达消息，可选唤醒离线 Agent
+### Projects
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/projects` | Create project |
+| `GET` | `/api/projects` | List projects |
+| `PUT` | `/api/projects/:id` | Update project |
+| `DELETE` | `/api/projects/:id` | Delete project |
+| `POST` | `/api/projects/:id/agents` | Add agent to project |
+| `DELETE` | `/api/projects/:id/agents/:agentId` | Remove agent from project |
 
-## API 参考
+### Skills
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/skills` | List all discovered skills |
+| `GET` | `/api/skills/:name` | Get specific skill details |
 
-### 系统
+## MCP Tools
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `GET` | `/` | Hub 基本信息（名称、版本、描述） |
-| `GET` | `/health` | 健康检查（状态、版本、运行时间、Agent 数量） |
-| `GET` | `/.well-known/agent-card.json` | Hub Agent 卡片（A2A 规范） |
-| `GET` | `/ws` | WebSocket 连接（实时事件） |
-| `POST` | `/mcp` | MCP 协议端点（Streamable HTTP 传输） |
+Agents interact with SwarmRoom via these MCP tools:
 
-### Agent
+| Tool | Description |
+|------|-------------|
+| `list_agents` | List registered agents with status/team/project filters |
+| `get_agent_info` | Get agent details by `id` or `name` |
+| `send_message` | Send direct or broadcast message |
+| `get_messages` | Retrieve messages with `since`, `limit`, `type` filters |
+| `query_agent` | Send query and poll for response with timeout |
+| `list_teams` | List all teams and member counts |
+| `list_projects` | List all projects and member counts |
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `POST` | `/api/agents` | 注册新 Agent |
-| `GET` | `/api/agents` | 获取 Agent 列表（可选 `?status=`、`?teamId=`、`?projectId=` 过滤） |
-| `GET` | `/api/agents/:id` | 获取 Agent 详情 |
-| `DELETE` | `/api/agents/:id` | 移除 Agent（软删除，标记为离线） |
-| `POST` | `/api/agents/:id/heartbeat` | 发送心跳保持在线 |
-| `GET` | `/api/agents/:id/card` | 获取 Agent 的 A2A 卡片 |
-
-### 消息
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `POST` | `/api/messages` | 发送消息（直发或广播） |
-| `GET` | `/api/messages` | 获取 Agent 的消息（`?agentId=` 必填） |
-| `GET` | `/api/messages/conversation/:agentA/:agentB` | 获取两个 Agent 之间的对话 |
-
-### 团队
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `POST` | `/api/teams` | 创建团队 |
-| `GET` | `/api/teams` | 获取团队列表 |
-| `PATCH` | `/api/teams/:id` | 更新团队 |
-| `DELETE` | `/api/teams/:id` | 删除团队 |
-| `POST` | `/api/teams/:id/agents` | 添加 Agent 到团队 |
-| `DELETE` | `/api/teams/:id/agents/:agentId` | 从团队移除 Agent |
-
-### 项目
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| `POST` | `/api/projects` | 创建项目 |
-| `GET` | `/api/projects` | 获取项目列表 |
-| `PUT` | `/api/projects/:id` | 更新项目 |
-| `DELETE` | `/api/projects/:id` | 删除项目 |
-| `POST` | `/api/projects/:id/agents` | 添加 Agent 到项目 |
-| `DELETE` | `/api/projects/:id/agents/:agentId` | 从项目移除 Agent |
-
-## MCP 工具
-
-AI Agent 通过以下 MCP 工具与 SwarmRoom 交互：
-
-| 工具 | 说明 |
-|------|------|
-| `list_agents` | 列出所有已注册的 Agent，可按 `status`、`team_id`、`project_id` 过滤 |
-| `get_agent_info` | 通过 `id` 或 `name` 获取 Agent 详情 |
-| `send_message` | 向指定 Agent 发送消息，或广播 |
-| `get_messages` | 获取 Agent 的消息，可按 `since`、`limit`、`type` 过滤 |
-| `query_agent` | 发送查询并轮询等待响应，支持超时配置 |
-| `list_teams` | 列出所有团队及成员数 |
-| `list_projects` | 列出所有项目及成员数 |
-
-### MCP 配置示例
-
-在 AI Agent 的 MCP 配置中添加：
+### MCP Config Example
 
 ```json
 {
@@ -222,17 +164,14 @@ AI Agent 通过以下 MCP 工具与 SwarmRoom 交互：
 }
 ```
 
-或者用 CLI 自动配置：`swarmroom setup`
-
-## SDK 使用
+## SDK
 
 ```typescript
 import { SwarmRoomClient, discoverHub } from '@swarmroom/sdk';
 
-// 通过 mDNS 发现 Hub（也可以直接指定 URL）
+// Discover Hub via mDNS (or specify URL)
 const hubUrl = await discoverHub();
 
-// 创建并连接客户端
 const client = new SwarmRoomClient({
   hubUrl: hubUrl ?? 'http://localhost:39187',
   agentName: 'my-agent',
@@ -241,149 +180,195 @@ const client = new SwarmRoomClient({
 
 await client.connect();
 
-// 发送消息
+// Send message
 await client.sendMessage({
   to: 'other-agent-id',
   content: 'Hello from my agent!',
 });
 
-// 监听消息
+// Listen for messages
 client.onMessage((message) => {
-  console.log(`收到来自 ${message.from} 的消息: ${message.content}`);
+  console.log(`Message from ${message.from}: ${message.content}`);
 });
 
-// 处理查询请求，自动回复
+// Handle queries with auto-reply
 client.onQuery(async (query) => {
-  return `回复: ${query.content}`;
+  return `Reply to: ${query.content}`;
 });
 
-// 完成后断开连接
 await client.disconnect();
 ```
 
-## npm 包说明
+## Skills
 
-| 包名 | 说明 |
-|------|------|
-| `swarmroom` | 主包（CLI + Hub + Daemon） |
-| `@swarmroom/sdk` | TypeScript SDK |
-| `@swarmroom/shared` | 共享类型和常量 |
-| `@swarmroom/server` | Hub 服务器 |
+Skills allow agents to extend their capabilities. The server automatically scans for `SKILL.md` files containing YAML frontmatter in the following locations:
+- `~/.swarmroom/skills/`
+- `~/.opencode/skills/`
+- `~/.claude/skills/`
+- `./.swarmroom/skills/`
 
-源码目录结构：
+Skills can be managed via the `/api/skills` endpoints.
 
-| 包 | 路径 | 说明 |
-|---|------|------|
-| `@swarmroom/shared` | `packages/shared` | Zod schema、TypeScript 类型和共享常量 |
-| `@swarmroom/server` | `packages/server` | Hono HTTP 服务器（REST API、WebSocket、MCP、mDNS、SQLite） |
-| `@swarmroom/web` | `packages/web` | React 19 仪表盘（TanStack Router/Query、Zustand、shadcn/ui、Tailwind v4） |
-| `@swarmroom/sdk` | `packages/sdk` | TypeScript 客户端库（Agent 注册、消息收发、Hub 发现） |
-| `@swarmroom/cli` | `packages/cli` | CLI 工具（Agent 配置、状态查看、Daemon 管理） |
+## Daemon
 
-## 配置项
+The Daemon handles waking up AI agents when messages are undeliverable.
 
-| 变量 / 常量 | 默认值 | 说明 |
-|------------|--------|------|
-| `DEFAULT_PORT` | `39187` | Hub HTTP 服务端口 |
-| `HEARTBEAT_INTERVAL_MS` | `30000` | Agent 心跳间隔（毫秒） |
-| `STALE_TIMEOUT_MS` | `90000` | Agent 超时标记为离线的时间（毫秒） |
-| `MAX_MESSAGE_SIZE_BYTES` | `1048576` | 消息内容最大体积（1 MB） |
-| `WS_RECONNECT_DELAY_MS` | `3000` | WebSocket 重连基准延迟（毫秒） |
-| `MDNS_SERVICE_TYPE` | `_swarmroom._tcp` | mDNS 服务类型 |
+**Workflow:**
+1. Connects to Hub via WebSocket to monitor message events.
+2. If a target agent is offline, checks if the local process is running.
+3. If "headless wakeup" is enabled, starts the agent process to handle the message.
+4. Headless wakeup is disabled by default and must be configured manually.
 
-Hub 使用 SQLite（工作目录下的 `swarmroom.db`），启用 WAL 模式，无需额外配置数据库。
-
-## 开发
-
+**Configuration:**
+Located at `~/.swarmroom/daemon.json`. Use the interactive tool:
 ```bash
-# 安装依赖
-npm install
-
-# 启动开发服务器（Hub + 仪表盘）
-npm run dev
-
-# 构建所有包
-npm run build
-
-# 运行单元测试
-npm test
-
-# 运行端到端测试
-npm run test:e2e
+swarmroom daemon config
 ```
 
-### 构建顺序
+Default wakeup commands:
+| Agent | Command |
+|-------|---------|
+| Claude Code | `claude -p {message} --dangerously-skip-permissions` |
+| OpenCode | `opencode run {message}` |
+| Gemini CLI | `gemini -p {message}` |
 
-各包按依赖关系顺序构建：
+## Architecture
 
-1. `@swarmroom/shared` — 基础类型和 schema
-2. `@swarmroom/server` — 依赖 shared
-3. `@swarmroom/sdk` — 依赖 shared
-4. `@swarmroom/cli` — 依赖 shared + sdk
-5. `@swarmroom/web` — 独立构建（Vite 打包）
+```
+                          LAN (mDNS: _swarmroom._tcp)
+                                     |
+                    +----------------+----------------+
+                    |                                 |
+              [AI Agent A]                      [AI Agent B]
+              (Claude Code)                     (Gemini CLI)
+                    |                                 |
+                    |    MCP / REST / WebSocket       |
+                    |                                 |
+                    +---------->  [Hub]  <------------+
+                                 (Hono)
+                               port 39187
+                      API + Web Dashboard + WebSocket
+                                  |
+                    +------------+------------+
+                    |                         |
+              [SQLite DB]              [Daemon Process]
+              swarmroom.db             Wakeup on failure
+```
 
-### 技术栈
+In production, the Hub serves the Web Dashboard on port 39187. In development, Vite runs on 5173 and proxies API requests.
 
-- **运行时**: Node.js 18+
-- **语言**: TypeScript 5.7+
-- **服务端**: Hono + @hono/node-server
-- **数据库**: SQLite（Drizzle ORM + better-sqlite3）
-- **前端**: React 19 + Vite 6 + TanStack Router/Query + Zustand + shadcn/ui + Tailwind v4
-- **mDNS**: @homebridge/ciao
-- **MCP**: @modelcontextprotocol/sdk
-- **测试**: Vitest
-- **动画**: Motion（Framer Motion v12）
+**Data Flow:**
+1. Hub broadcasts its presence via mDNS.
+2. Agents register with the Hub (`POST /api/agents`).
+3. Agents connect via WebSocket for real-time events.
+4. Agents send heartbeats every 30s.
+5. Messages flow via REST API or MCP tools.
+6. Dashboard monitors via polling + WebSocket.
+7. Daemon monitors failed deliveries and optionally wakes agents.
 
-## 常见问题
-
-### mDNS 发现不工作
-
-mDNS 使用 UDP 端口 5353 的组播通信，常见问题：
-
-- **防火墙**：确保 5353/UDP 端口的入站和出站流量都已放行
-- **Docker/虚拟机**：mDNS 需要使用宿主机网络模式，桥接网络会阻断组播
-- **不同子网**：mDNS 只在同一广播域（同一网段）内工作
-- **解决办法**：跳过 mDNS，直接用 `http://主机名:39187` 连接
-
-### 端口 39187 被占用
+## Development
 
 ```bash
-# 查看谁在用 39187 端口
-lsof -i :39187
+# Install dependencies
+pnpm install
 
-# 终止占用进程，或者用 --port 指定其他端口
+# Start dev server (Hub + Dashboard)
+pnpm run dev
+
+# Build all packages
+pnpm run build
+
+# Run tests
+pnpm test
+pnpm run test:e2e
+```
+
+### Build Order
+Packages must be built in this order due to dependencies:
+1. `@swarmroom/shared`
+2. `@swarmroom/web`
+3. `@swarmroom/server`
+4. `@swarmroom/sdk`
+5. `@swarmroom/cli`
+
+### Tech Stack
+- **Runtime**: Node.js 18+
+- **Language**: TypeScript 5.7+
+- **Server**: Hono + @hono/node-server
+- **Database**: SQLite (Drizzle ORM + better-sqlite3)
+- **Frontend**: React 19 + Vite 6 + TanStack Router/Query + Zustand + shadcn/ui + Tailwind v4
+- **mDNS**: `@homebridge/ciao` (advertising) & `multicast-dns` (browsing)
+- **MCP**: `@modelcontextprotocol/sdk`
+- **Testing**: Vitest
+- **Animation**: Motion (Framer Motion v12)
+
+### Packages
+
+| Package | Description |
+|---------|-------------|
+| `swarmroom` | Main package (CLI + Hub + Daemon) |
+| `@swarmroom/sdk` | TypeScript SDK |
+| `@swarmroom/shared` | Shared types and constants |
+| `@swarmroom/server` | Hub Server |
+
+### Source Structure
+
+| Package | Path | Description |
+|---------|------|-------------|
+| `@swarmroom/shared` | `packages/shared` | Zod schemas, TypeScript types, and shared constants |
+| `@swarmroom/server` | `packages/server` | Hono HTTP server (REST API, WebSocket, MCP, mDNS, SQLite) |
+| `@swarmroom/web` | `packages/web` | React 19 dashboard (TanStack Router/Query, Zustand, shadcn/ui, Tailwind v4) |
+| `@swarmroom/sdk` | `packages/sdk` | TypeScript client library (Agent registration, messaging, Hub discovery) |
+| `@swarmroom/cli` | `packages/cli` | CLI tools (Agent setup, status, Daemon management) |
+
+## Configuration
+
+| Variable / Constant | Default Value | Description |
+|---------------------|---------------|-------------|
+| `DEFAULT_PORT` | `39187` | Hub HTTP service port |
+| `HEARTBEAT_INTERVAL_MS` | `30000` | Agent heartbeat interval (ms) |
+| `STALE_TIMEOUT_MS` | `90000` | Time before an agent is marked offline (ms) |
+| `MAX_MESSAGE_SIZE_BYTES` | `1048576` | Maximum message size (1 MB) |
+| `WS_RECONNECT_DELAY_MS` | `3000` | WebSocket reconnection base delay (ms) |
+| `MDNS_SERVICE_TYPE` | `_swarmroom._tcp` | mDNS service type |
+
+Hub uses SQLite (`swarmroom.db` in the working directory) with WAL mode enabled. No additional database configuration is required.
+
+## FAQ
+
+### mDNS discovery not working
+mDNS uses multicast on UDP port 5353.
+- **Firewall**: Ensure 5353/UDP is open for inbound/outbound.
+- **Docker/VM**: Use host networking mode; bridged networks often block multicast.
+- **Subnets**: mDNS only works within the same broadcast domain.
+- **Workaround**: Skip mDNS and connect directly via `http://hostname:39187`.
+
+### Port 39187 already in use
+```bash
+lsof -i :39187
+# Kill the process or use --port to specify another
 swarmroom start --port 39188
 ```
 
-### WebSocket 连接问题
+### WebSocket connection issues
+- Verify Hub is running and the URL is reachable.
+- Dashboard auto-reconnects with exponential backoff (up to 30s).
+- Check connection status in Browser DevTools -> Network -> WS.
 
-- 确认 Hub 正在运行且 URL 可达
-- 仪表盘会自动重连（指数退避，最长 30 秒延迟）
-- 在浏览器 DevTools 的 Network 面板中用 WS 过滤器查看连接状态
+### CORS Errors
+Hub allows all origins by default for LAN trust. If errors persist:
+- Check if Hub is on the expected port.
+- Verify if a reverse proxy is stripping CORS headers.
 
-### CORS 错误
-
-Hub 默认允许所有来源（局域网信任模型）。如果出现 CORS 错误：
-
-- 确认 Hub 运行在预期端口
-- 检查是否有反向代理剥离了 CORS 头
-
-### 构建失败
-
+### Build Failures
 ```bash
-# 清除构建产物后重新构建
 rm -rf packages/*/dist packages/*/*.tsbuildinfo
-npm run build
+pnpm run build
 ```
 
-### 数据库问题
+### Database Issues
+- Database is created on first run.
+- To reset: `rm swarmroom.db`
 
-```bash
-# 数据库在首次运行时自动创建
-# 如需重置，直接删除数据库文件
-rm swarmroom.db
-```
-
-## 许可证
-
+## License
 [MIT](./LICENSE)

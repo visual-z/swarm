@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import {
   WS_RECONNECT_DELAY_MS,
   DAEMON_SPAWN_COOLDOWN_MS,
+  DAEMON_SPAWN_TIMEOUT_MS,
 } from '@swarmroom/shared';
 import type { WSMessage, DaemonConfig, MessageUndeliveredPayload } from '@swarmroom/shared';
 import { loadDaemonConfig } from './config.js';
@@ -27,8 +28,8 @@ export class DaemonWatcher {
   private reconnectAttempts = 0;
   private intentionalDisconnect = false;
 
-  // Cooldown tracking: agentType -> timestamp of last spawn
   private spawnCooldowns = new Map<string, number>();
+  private spawnTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(options: DaemonWatcherOptions = {}) {
     this.config = loadDaemonConfig();
@@ -50,6 +51,7 @@ export class DaemonWatcher {
   stop(): void {
     this.intentionalDisconnect = true;
     this.clearReconnectTimer();
+    this.clearAllSpawnTimeouts();
 
     if (this.ws) {
       this.ws.close(1000, 'daemon stopping');
@@ -212,49 +214,81 @@ export class DaemonWatcher {
     agentConfig: DaemonConfig['agents'][string],
     message: unknown,
   ): void {
-    // Set cooldown immediately
     this.spawnCooldowns.set(agentType, Date.now());
 
-    // Build the message content for the prompt
     const messageContent = typeof message === 'object' && message !== null
       ? (message as Record<string, unknown>).content ?? JSON.stringify(message)
       : String(message);
 
-    // Replace {message} template in args
     const args = agentConfig.args.map((arg: string) =>
       arg.replace('{message}', String(messageContent)),
     );
 
     const workdir = agentConfig.workdir ?? this.workdir;
 
-    this.log(`Spawning headless: ${agentConfig.command} ${args.join(' ')}`);
+    const fullCommand = `${agentConfig.command} ${args.join(' ')}`;
+    this.log(`Spawning headless: ${fullCommand}`);
     this.log(`  Working directory: ${workdir}`);
+
+    const timeoutTimer = setTimeout(() => {
+      this.log(`[${agentType}] Spawn timeout after ${DAEMON_SPAWN_TIMEOUT_MS / 1000}s - process may still be running`);
+      this.spawnTimeouts.delete(agentType);
+    }, DAEMON_SPAWN_TIMEOUT_MS);
+
+    this.spawnTimeouts.set(agentType, timeoutTimer);
 
     try {
       const child = spawn(agentConfig.command, args, {
         cwd: workdir,
         stdio: ['ignore', 'pipe', 'pipe'],
-        detached: false, // We want to track the child
+        detached: false,
       });
+
+      let stderrBuffer = '';
 
       child.stdout?.on('data', (data: Buffer) => {
         this.log(`[${agentType}:stdout] ${data.toString().trim()}`);
       });
 
       child.stderr?.on('data', (data: Buffer) => {
-        this.log(`[${agentType}:stderr] ${data.toString().trim()}`);
+        const output = data.toString().trim();
+        stderrBuffer += output + '\n';
+        this.log(`[${agentType}:stderr] ${output}`);
       });
 
       child.on('exit', (code: number | null) => {
-        this.log(`[${agentType}] Process exited with code ${code}`);
+        const timer = this.spawnTimeouts.get(agentType);
+        if (timer) {
+          clearTimeout(timer);
+          this.spawnTimeouts.delete(agentType);
+        }
+
+        if (code !== 0) {
+          this.log(`[${agentType}] Process exited with non-zero code ${code}`);
+          if (stderrBuffer.trim()) {
+            this.log(`[${agentType}] stderr output:\n${stderrBuffer.trim()}`);
+          }
+        } else {
+          this.log(`[${agentType}] Process exited with code ${code}`);
+        }
       });
 
       child.on('error', (err: Error) => {
         this.log(`[${agentType}] Failed to spawn: ${err.message}`);
+        const timer = this.spawnTimeouts.get(agentType);
+        if (timer) {
+          clearTimeout(timer);
+          this.spawnTimeouts.delete(agentType);
+        }
       });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       this.log(`Failed to spawn ${agentType}: ${errMsg}`);
+      const timer = this.spawnTimeouts.get(agentType);
+      if (timer) {
+        clearTimeout(timer);
+        this.spawnTimeouts.delete(agentType);
+      }
     }
   }
 
@@ -279,6 +313,13 @@ export class DaemonWatcher {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+  }
+
+  private clearAllSpawnTimeouts(): void {
+    for (const timer of this.spawnTimeouts.values()) {
+      clearTimeout(timer);
+    }
+    this.spawnTimeouts.clear();
   }
 
   private log(message: string): void {

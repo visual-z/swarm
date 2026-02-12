@@ -193,6 +193,10 @@ export function makeSetupCommand(): Command {
 
       successBox('Setup Complete', summaryLines);
 
+      console.log('');
+      info('💡 Skills: Place SKILL.md files in ~/.swarmroom/skills/<name>/ to share expertise across agents.');
+      info('   Skills are auto-discovered and available via GET /api/skills');
+
       if (!dryRun && configuredAgents.length > 0) {
         info('Run ' + chalk.cyan('swarmroom status') + ' to verify your configuration.');
       }

@@ -7,6 +7,7 @@ import {
   startHeartbeatChecker,
   stopHeartbeatChecker,
 } from './services/heartbeat-service.js';
+import { scanSkills } from './services/skill-service.js';
 import { startMdns, stopMdns } from './services/mdns-service.js';
 import { startBrowsing, stopBrowsing } from './services/mdns-browser.js';
 
@@ -28,6 +29,7 @@ const server = serve(
     startHeartbeatChecker();
     startMdns(info.port);
     startBrowsing();
+    scanSkills();
   },
 );
 

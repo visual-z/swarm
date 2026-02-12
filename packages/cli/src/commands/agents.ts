@@ -27,12 +27,7 @@ interface Agent {
 
 interface AgentsResponse {
   success: boolean;
-  data: {
-    agents: Agent[];
-    total: number;
-    page: number;
-    limit: number;
-  };
+  data: Agent[];
 }
 
 async function resolveHubUrl(providedUrl?: string): Promise<string> {
@@ -67,7 +62,7 @@ export function makeAgentsCommand(): Command {
         }
 
         const result = (await response.json()) as AgentsResponse;
-        const agents = result.data.agents;
+        const agents = result.data;
         spinner.stop();
 
         if (agents.length === 0) {

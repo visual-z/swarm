@@ -3,7 +3,15 @@
   "version": "0.2.0",
   "type": "module",
   "description": "LAN-based agent discovery and communication hub for AI coding agents",
-  "keywords": ["swarm", "agent", "mcp", "ai", "multi-agent", "lan", "discovery"],
+  "keywords": [
+    "swarm",
+    "agent",
+    "mcp",
+    "ai",
+    "multi-agent",
+    "lan",
+    "discovery"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -15,7 +23,12 @@
   "bin": {
     "swarmroom": "./bin/swarmroom.js"
   },
-  "files": ["dist", "bin", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -23,16 +36,20 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@swarmroom/sdk": "^0.2.0",
-    "@swarmroom/server": "^0.2.0",
-    "@swarmroom/shared": "^0.2.0",
+    "@swarmroom/sdk": "workspace:*",
+    "@swarmroom/server": "workspace:*",
+    "@swarmroom/shared": "workspace:*",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "inquirer": "^13.2.2",
-    "ora": "^9.3.0"
+    "multicast-dns": "^7.2.5",
+    "ora": "^9.3.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.9",
+    "@types/multicast-dns": "^7.2.4",
+    "@types/ws": "^8.18.1",
     "vitest": "^4.0.18"
   }
 }
